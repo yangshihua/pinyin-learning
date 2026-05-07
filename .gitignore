@@ -1,0 +1,15 @@
+.DS_Store
+recorded_audio/
+trash/
+*.docx
+.claude/
+__pycache__/
+*.pyc
+node_modules/
+.env
+*.pem
+*.crt
+cert_ext.cnf
+config.py
+suntone_config.json
+config_1.py

@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>用字学拼音</title>
+  <link href="https://fonts.googleapis.com/css2?family=Klee+One&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      width: 100vw; height: 100vh; overflow: hidden;
+      font-family: -apple-system, 'SF Pro Display', system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    #app {
+      position: relative; width: 100%; height: 100%;
+      overflow: hidden;
+      background: linear-gradient(160deg, #0d2b2b 0%, #0a2020 40%, #0d2535 70%, #0d2b2b 100%);
+    }
+
+    .bg-decor {
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    }
+    .bg-decor::before {
+      content: ''; position: absolute; inset: 0;
+      background-image:
+        radial-gradient(circle at 15% 20%, rgba(180,160,200,0.1) 0%, transparent 8%),
+        radial-gradient(circle at 85% 15%, rgba(160,180,200,0.08) 0%, transparent 6%),
+        radial-gradient(circle at 50% 80%, rgba(200,180,160,0.06) 0%, transparent 12%);
+    }
+
+    /* ========== 机器人（与 teaching 一致） ========== */
+    .robot-stage {
+      position: fixed;
+      left: 50%; top: 50%;
+      transform: translate(calc(-50% - 380px), -50%) scale(0.5) rotate(-5deg);
+      z-index: 5;
+      transform-origin: center center;
+    }
+    .robot-wrapper {
+      display: flex; flex-direction: column; align-items: center;
+      animation: float 4s ease-in-out infinite;
+    }
+    @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+
+    .robot-head-container { position: relative; z-index: 3; display: flex; flex-direction: column; align-items: center; }
+    .robot-antenna { width: 6px; height: 22px; background: #d1d8e0; border-radius: 3px; position: relative; z-index: 1; }
+    .robot-antenna::before { content: ''; position: absolute; top: -7px; left: -3.5px; width: 13px; height: 13px; background: #00d2d3; border-radius: 50%; box-shadow: 0 0 10px #00d2d3; animation: blink 1.5s infinite alternate; }
+    @keyframes blink { 0% { opacity: 0.5; } 100% { opacity: 1; box-shadow: 0 0 18px #00d2d3; } }
+
+    .robot-head { width: 160px; height: 120px; background: linear-gradient(135deg, #fff 0%, #e1e8f0 100%); border-radius: 70px 70px 55px 55px; margin-top: -3px; box-shadow: 0 12px 24px rgba(0,0,0,0.08), inset -6px -6px 18px rgba(0,0,0,0.05), inset 6px 6px 12px rgba(255,255,255,0.8); display: flex; justify-content: center; align-items: center; padding-bottom: 10px; position: relative; }
+    .robot-ears { position: absolute; width: 190px; height: 42px; left: -15px; top: 40px; display: flex; justify-content: space-between; z-index: -1; }
+    .robot-ear { width: 22px; height: 42px; background: #a4b0be; border-radius: 10px; box-shadow: inset 2px 2px 6px rgba(0,0,0,0.2); }
+    .robot-face { width: 120px; height: 72px; background: #151a22; border-radius: 26px; box-shadow: inset 0 5px 12px rgba(0,0,0,0.8); display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; overflow: hidden; }
+    .robot-face::before { content: ''; position: absolute; top: 0; left: 10%; width: 80%; height: 14px; background: linear-gradient(to bottom, rgba(255,255,255,0.15), transparent); border-radius: 12px; }
+    .face-led { display: flex; flex-direction: column; align-items: center; gap: 10px; transform: translateX(8px); }
+    .eyes { display: flex; gap: 28px; animation: lookAtCard 3s ease-in-out infinite; }
+    @keyframes lookAtCard { 0%,100% { transform: translateX(2px); } 50% { transform: translateX(6px); } }
+    .eye { width: 16px; height: 14px; background: #00d2d3; border-radius: 6px; box-shadow: 0 0 10px #00d2d3; position: relative; }
+    .eye::after { content: ''; position: absolute; top: 2px; right: 3px; width: 4px; height: 4px; background: rgba(255,255,255,0.8); border-radius: 50%; }
+    .mouth { width: 20px; height: 8px; background: #00d2d3; border-radius: 0 0 10px 10px; box-shadow: 0 0 12px #00d2d3; animation: happyMouth 4s ease-in-out infinite; }
+    @keyframes happyMouth { 0%,100% { width: 20px; } 30% { width: 24px; } }
+    .robot-neck { width: 60px; height: 22px; background: #8895a5; border-radius: 8px; margin-top: -12px; z-index: 2; box-shadow: inset 0 4px 8px rgba(0,0,0,0.3); }
+    .robot-body { width: 220px; height: 190px; background: linear-gradient(135deg, #fff 0%, #e1e8f0 100%); border-radius: 80px 80px 110px 110px; margin-top: -10px; z-index: 3; position: relative; box-shadow: 0 18px 36px rgba(0,0,0,0.1), inset -8px -8px 20px rgba(0,0,0,0.06), inset 8px 8px 20px rgba(255,255,255,0.9); display: flex; justify-content: center; align-items: center; padding-top: 12px; }
+    .chest-screen { width: 160px; height: 95px; background: #05080f; border-radius: 32px; box-shadow: inset 0 8px 20px rgba(0,0,0,0.9), 0 3px 0 rgba(255,255,255,0.8); position: relative; overflow: hidden; display: flex; justify-content: center; align-items: center; }
+    .chest-screen::after { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 50%; background: linear-gradient(to bottom, rgba(255,255,255,0.1), transparent); pointer-events: none; }
+    .chest-screen canvas { display: block; width: 100%; height: 100%; }
+    .robot-hands { position: absolute; top: 190px; width: 280px; display: flex; justify-content: space-between; z-index: 4; pointer-events: none; }
+    .hand { width: 38px; height: 60px; background: linear-gradient(135deg, #fff 0%, #d1d8e0 100%); border-radius: 18px; box-shadow: 0 10px 20px rgba(0,0,0,0.1), inset -3px -3px 8px rgba(0,0,0,0.05); }
+    .hand.left { animation: float-hand 3.5s ease-in-out infinite reverse; }
+    .hand.right { animation: pointToCard 3s ease-in-out infinite; }
+    @keyframes float-hand { 0%,100% { transform: translateY(0) rotate(5deg); } 50% { transform: translateY(-10px) rotate(-5deg); } }
+    @keyframes pointToCard { 0%,100% { transform: translateY(0) rotate(-20deg) translateX(15px); } 30%,70% { transform: translateY(-15px) rotate(-35deg) translateX(30px); } 50% { transform: translateY(-20px) rotate(-40deg) translateX(35px); } }
+
+    /* ========== 单卡片 ========== */
+    .card-wrapper {
+      position: fixed;
+      left: 50%; top: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 4;
+    }
+
+    .study-card {
+      width: 520px;
+      aspect-ratio: 1;
+      background: rgba(210,225,205,0.82);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      border: 1.5px solid rgba(180,205,175,0.5);
+      border-radius: 32px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.35), 0 8px 20px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.6);
+      background-image:
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 300 300' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.22'/%3E%3C/svg%3E"),
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.12' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)' opacity='0.1'/%3E%3C/svg%3E");
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      position: relative;
+      gap: 4px;
+    }
+    .study-card:hover { transform: scale(1.03); }
+    .study-card:active { transform: scale(0.97); }
+
+    .pinyin-text {
+      font-family: 'Klee One', 'Klee', 'Yuanti SC', cursive;
+      font-size: 76px;
+      color: #4a6a5a;
+      line-height: 1.1;
+      letter-spacing: 6px;
+      user-select: none;
+      margin-top: -10px;
+    }
+
+    .char-text {
+      font-family: 'STKaiti', '华文楷体', 'KaiTi', 'Kaiti SC', 'Noto Serif CJK SC', serif;
+      font-size: 150px;
+      color: #2a2a1a;
+      line-height: 1;
+      letter-spacing: 4px;
+      user-select: none;
+      margin-top: -6px;
+    }
+
+    /* ========== 暗色模式 ========== */
+    @media (prefers-color-scheme: dark) {
+      #app { background: linear-gradient(160deg, #081a1a, #061515 40%, #081a20 70%, #081a1a); }
+      .study-card { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.1); }
+      .char-text { color: #f0ece0; }
+      .pinyin-text { color: #7de8d8; }
+      .header-title { color: rgba(255,255,255,0.3); }
+      .bottom-hint { color: rgba(255,255,255,0.2); }
+      .card-label { color: rgba(255,255,255,0.15); }
+      .robot-head, .robot-body, .hand { background: linear-gradient(135deg, #2a2a35, #1a1a25); }
+      .robot-face { background: #0a0a15; }
+      .robot-neck { background: #4a4a58; }
+      .robot-ear { background: #5a5a68; }
+    }
+
+    @media (max-width: 820px) {
+      .study-card { width: 360px; }
+      .char-text { font-size: 110px; }
+      .pinyin-text { font-size: 56px; }
+      .robot-stage { transform: translate(calc(-50% - 260px), -50%) scale(0.42) rotate(-5deg); }
+    }
+    @media (max-width: 600px) {
+      .study-card { width: 260px; }
+      .char-text { font-size: 80px; }
+      .pinyin-text { font-size: 40px; }
+      .robot-stage { transform: translate(calc(-50% - 180px), -50%) scale(0.3) rotate(-5deg); }
+      .robot-hands { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+
+    <div class="bg-decor"></div>
+
+    <!-- 机器人 -->
+    <div class="robot-stage">
+      <div class="robot-wrapper">
+        <div class="robot-head-container">
+          <div class="robot-antenna"></div>
+          <div class="robot-head">
+            <div class="robot-ears"><div class="robot-ear"></div><div class="robot-ear"></div></div>
+            <div class="robot-face">
+              <div class="face-led">
+                <div class="eyes"><div class="eye"></div><div class="eye"></div></div>
+                <div class="mouth"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="robot-neck"></div>
+        <div class="robot-body">
+          <div class="chest-screen">
+            <canvas id="hologramCanvas"></canvas>
+          </div>
+        </div>
+        <div class="robot-hands">
+          <div class="hand left"></div>
+          <div class="hand right"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 单卡片 -->
+    <div class="card-wrapper">
+      <div class="study-card">
+        <span class="pinyin-text" id="pinyinText"></span>
+        <span class="char-text" id="charText"></span>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // 从 API 加载字数据：?id=12 指定，无参数随机
+    const p = new URLSearchParams(location.search);
+    const idParam = p.get('id');
+    const url = idParam ? `/api/character?id=${idParam}` : '/api/character';
+    fetch(url)
+      .then(r => r.json())
+      .then(d => {
+        document.getElementById('charText').textContent = d.char;
+        document.getElementById('pinyinText').textContent = d.pinyin;
+        document.title = d.char + ' ' + d.pinyin;
+      })
+      .catch(() => {
+        // 降级：直接用 URL 参数
+        document.getElementById('charText').textContent = p.get('char') || '爸';
+        document.getElementById('pinyinText').textContent = p.get('pinyin') || 'bà';
+      });
+
+    // 全息波浪
+    const cvs = document.getElementById('hologramCanvas');
+    const ctx = cvs.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
+    cvs.width = 160 * dpr; cvs.height = 95 * dpr;
+    ctx.scale(dpr, dpr);
+    let ph = 0, ap = 0.08;
+    const wvs = [
+      {t:'surface',s:.04,f:.04,a:.12,o:0},{t:'surface',s:.06,f:.05,a:.08,o:Math.PI},
+      {t:'line',s:.08,f:.06,a:.9,o:1,lw:1.8},{t:'line',s:.1,f:.04,a:.5,o:2,lw:1.2},
+      {t:'dots',s:.07,f:.05,a:1,o:1.5,ds:1.2,gap:6}
+    ];
+    (function tick() {
+      ctx.clearRect(0,0,160,95);
+      var ta = .08+Math.sin(ph*.02)*.03; ap += (ta-ap)*.1; ph++;
+      var R=0,G=210,B=211,cy=47.5,mh=38;
+      wvs.forEach(function(w) {
+        ctx.beginPath(); var pts=[];
+        for(var x=0;x<=160;x+=(w.t==='dots'?w.gap:2)) {
+          var d=Math.sin(x/160*Math.PI);
+          var y=Math.sin(x*w.f+ph*w.s+w.o)*Math.cos(x*w.f*.4)*mh*ap*d;
+          pts.push({x:x,y:cy+y});
+        }
+        var cs=R+','+G+','+B;
+        if(w.t==='surface') {
+          ctx.moveTo(0,cy);
+          for(var i=1;i<pts.length;i++){var xc=(pts[i-1].x+pts[i].x)/2,yc=(pts[i-1].y+pts[i].y)/2;ctx.quadraticCurveTo(pts[i-1].x,pts[i-1].y,xc,yc);}
+          ctx.lineTo(160,cy);ctx.fillStyle='rgba('+cs+','+w.a+')';ctx.fill();
+        } else if(w.t==='line') {
+          ctx.moveTo(pts[0].x,pts[0].y);
+          for(var i=1;i<pts.length;i++){var xc=(pts[i-1].x+pts[i].x)/2,yc=(pts[i-1].y+pts[i].y)/2;ctx.quadraticCurveTo(pts[i-1].x,pts[i-1].y,xc,yc);}
+          ctx.strokeStyle='rgba('+cs+','+w.a+')';ctx.lineWidth=w.lw;ctx.shadowBlur=10;ctx.shadowColor='rgba('+cs+',0.8)';ctx.stroke();ctx.shadowBlur=0;
+        } else if(w.t==='dots') {
+          ctx.fillStyle='rgba('+cs+','+w.a+')';ctx.shadowBlur=6;ctx.shadowColor='rgba('+cs+',1)';
+          pts.forEach(function(p){ctx.beginPath();ctx.arc(p.x,p.y,w.ds+ap*1.5,0,Math.PI*2);ctx.fill();});
+          ctx.shadowBlur=0;
+        }
+      });
+      requestAnimationFrame(tick);
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>拼音测评</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      width: 100vw; height: 100vh; overflow: hidden;
+      font-family: -apple-system, 'SF Pro Display', system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      background: linear-gradient(160deg, #0d2b2b 0%, #0a2020 40%, #0d2535 70%, #0d2b2b 100%);
+    }
+    #app {
+      position: relative;
+      width: 100%; height: 100%;
+      overflow: hidden;
+    }
+
+    /* ========== 背景装饰 ========== */
+    .bg-decor {
+      position: fixed; inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .bg-decor::before {
+      content: ''; position: absolute; inset: 0;
+      background-image:
+        radial-gradient(circle at 15% 20%, rgba(180,160,200,0.1) 0%, transparent 8%),
+        radial-gradient(circle at 85% 15%, rgba(160,180,200,0.08) 0%, transparent 6%),
+        radial-gradient(circle at 50% 80%, rgba(200,180,160,0.06) 0%, transparent 12%);
+    }
+
+    /* ========== 头部 ========== */
+    .header {
+      position: fixed; top: 0; left: 0; right: 0;
+      height: 60px; display: flex; align-items: center; justify-content: center;
+      z-index: 20; padding: 0 24px;
+    }
+    .header-title {
+      font-size: 17px; font-weight: 600;
+      color: rgba(255,255,255,0.4); letter-spacing: 4px;
+    }
+    .header-progress {
+      position: absolute; right: 24px;
+      font-size: 14px; color: rgba(255,255,255,0.35);
+    }
+
+    /* ========== 机器人 ========== */
+    .robot-area {
+      position: fixed;
+      left: 50%; top: 50%;
+      transform: translate(calc(-50% - 360px), calc(-50% + 10px)) scale(0.42);
+      z-index: 5;
+      transform-origin: center center;
+    }
+    .robot-wrapper {
+      display: flex; flex-direction: column; align-items: center;
+      animation: float 4s ease-in-out infinite;
+    }
+    @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+    .result-pass .robot-wrapper, .result-fail .robot-wrapper { animation: none; }
+
+    @keyframes lookAtCard { 0%,100% { transform: translateX(2px); } 50% { transform: translateX(6px); } }
+    @keyframes happyMouth { 0%,100% { width: 20px; } 30% { width: 26px; } }
+    .robot-head-container { position: relative; z-index: 3; display: flex; flex-direction: column; align-items: center; }
+    .robot-antenna { width: 6px; height: 22px; background: #d1d8e0; border-radius: 3px; position: relative; z-index: 1; }
+    .robot-antenna::before { content: ''; position: absolute; top: -7px; left: -3.5px; width: 13px; height: 13px; background: #00d2d3; border-radius: 50%; box-shadow: 0 0 10px #00d2d3; animation: blink 1.5s infinite alternate; }
+    @keyframes blink { 0% { opacity: 0.5; } 100% { opacity: 1; box-shadow: 0 0 18px #00d2d3; } }
+    .result-pass .robot-antenna::before {
+      background: #FFD700; animation: blinkFast 0.3s infinite alternate;
+      box-shadow: 0 0 5px #FFD700;
+    }
+    @keyframes blinkFast {
+      0% { opacity: 0.7; box-shadow: 0 0 5px #FFD700; }
+      100% { opacity: 1; box-shadow: 0 0 25px #FFD700, 0 0 50px #FFD700; }
+    }
+
+    .robot-head { width: 160px; height: 120px; background: linear-gradient(135deg, #fff 0%, #e1e8f0 100%); border-radius: 70px 70px 55px 55px; margin-top: -3px; box-shadow: 0 12px 24px rgba(0,0,0,0.08), inset -6px -6px 18px rgba(0,0,0,0.05), inset 6px 6px 12px rgba(255,255,255,0.8); display: flex; justify-content: center; align-items: center; padding-bottom: 10px; position: relative; }
+    .robot-ears { position: absolute; width: 190px; height: 42px; left: -15px; top: 40px; display: flex; justify-content: space-between; z-index: -1; }
+    .robot-ear { width: 22px; height: 42px; background: #a4b0be; border-radius: 10px; box-shadow: inset 2px 2px 6px rgba(0,0,0,0.2); }
+    .robot-face { width: 120px; height: 72px; background: #151a22; border-radius: 26px; box-shadow: inset 0 5px 12px rgba(0,0,0,0.8); display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; overflow: hidden; transition: all 0.5s; }
+    .robot-face::before { content: ''; position: absolute; top: 0; left: 10%; width: 80%; height: 14px; background: linear-gradient(to bottom, rgba(255,255,255,0.15), transparent); border-radius: 12px; }
+    .result-pass .robot-face { box-shadow: inset 0 5px 12px rgba(0,0,0,0.8), 0 0 30px rgba(255,215,0,0.25); }
+    .result-pass .robot-face::before { background: linear-gradient(to bottom, rgba(255,215,0,0.2), transparent); }
+
+    .face-led { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+    .state-ready .face-led { transform: translateX(8px); }
+    .eyes { display: flex; gap: 28px; transition: all 0.3s; }
+    .state-ready .eyes { animation: lookAtCard 3s ease-in-out infinite; }
+    .eye { width: 16px; height: 14px; background: #00d2d3; border-radius: 6px; box-shadow: 0 0 10px #00d2d3; position: relative; transition: all 0.3s; }
+    .eye::after { content: ''; position: absolute; top: 2px; right: 3px; width: 4px; height: 4px; background: rgba(255,255,255,0.8); border-radius: 50%; }
+
+    .result-pass .eye {
+      width: 20px; height: 16px; background: #FFD700;
+      box-shadow: 0 0 15px #FFD700, 0 0 30px rgba(255,215,0,0.5);
+      border-radius: 50%; animation: starEyes 1s ease-in-out infinite;
+    }
+    .result-pass .eye::after { display: none; }
+
+    .result-fail .eye {
+      width: 12px; height: 14px; background: rgba(0,210,211,0.4);
+      box-shadow: 0 0 5px rgba(0,210,211,0.2); border-radius: 50%;
+    }
+    .result-fail .eye::after { opacity: 0.3; }
+
+    .mouth {
+      width: 22px; height: 6px; background: #00d2d3;
+      border-radius: 3px; box-shadow: 0 0 8px #00d2d3;
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .state-ready .mouth {
+      width: 20px; height: 8px;
+      border-radius: 0 0 10px 10px;
+      animation: happyMouth 4s ease-in-out infinite;
+    }
+    .result-pass .mouth {
+      width: 28px; height: 14px; background: #FFD700;
+      box-shadow: 0 0 20px #FFD700;
+      border-radius: 0 0 14px 14px;
+      animation: happyBounce 0.6s ease-in-out infinite alternate;
+    }
+    @keyframes happyBounce {
+      0% { width: 28px; height: 14px; }
+      100% { width: 34px; height: 18px; }
+    }
+    .result-fail .mouth {
+      width: 18px; height: 10px; background: transparent;
+      border-top: 3px solid rgba(0,210,211,0.4);
+      border-radius: 8px 8px 0 0; box-shadow: none;
+    }
+    .result-fail .robot-head {
+      animation: headShake 0.6s ease-in-out 2;
+    }
+    @keyframes headShake {
+      0%, 100% { transform: rotate(0deg); }
+      25% { transform: rotate(-8deg); }
+      75% { transform: rotate(8deg); }
+    }
+
+    .robot-neck { width: 60px; height: 22px; background: #8895a5; border-radius: 8px; margin-top: -12px; z-index: 2; box-shadow: inset 0 4px 8px rgba(0,0,0,0.3); }
+    .robot-body { width: 220px; height: 190px; background: linear-gradient(135deg, #fff 0%, #e1e8f0 100%); border-radius: 80px 80px 110px 110px; margin-top: -10px; z-index: 3; position: relative; box-shadow: 0 18px 36px rgba(0,0,0,0.1), inset -8px -8px 20px rgba(0,0,0,0.06), inset 8px 8px 20px rgba(255,255,255,0.9); display: flex; justify-content: center; align-items: center; padding-top: 12px; }
+    .chest-screen { width: 160px; height: 95px; background: #05080f; border-radius: 32px; box-shadow: inset 0 8px 20px rgba(0,0,0,0.9), 0 3px 0 rgba(255,255,255,0.8); position: relative; overflow: hidden; display: flex; justify-content: center; align-items: center; }
+    .chest-screen::after { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 50%; background: linear-gradient(to bottom, rgba(255,255,255,0.1), transparent); pointer-events: none; }
+    .result-pass .chest-screen { box-shadow: inset 0 8px 20px rgba(0,0,0,0.9), 0 0 20px rgba(255,215,0,0.3); }
+    .chest-screen canvas { display: block; width: 100%; height: 100%; }
+
+    /* ========== 机器手（缩小容器，避免挡住卡片） ========== */
+    .robot-hands {
+      position: absolute; top: 190px;
+      width: 240px;
+      display: flex;
+      justify-content: space-between;
+      z-index: 4; pointer-events: none;
+    }
+    .hand {
+      width: 34px; height: 54px;
+      background: linear-gradient(135deg, #fff 0%, #d1d8e0 100%);
+      border-radius: 18px;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.1), inset -3px -3px 8px rgba(0,0,0,0.05);
+      transition: all 0.3s;
+    }
+
+    .state-ready .hand.left { animation: swayLeft 4s ease-in-out infinite; }
+    .state-ready .hand.right { animation: pointToCard 3s ease-in-out infinite; }
+
+    .result-pass .hand.left { animation: clapLeft 0.35s ease-in-out infinite alternate; }
+    .result-pass .hand.right { animation: clapRight 0.35s ease-in-out infinite alternate; }
+
+    .result-fail .hand.left { animation: droopHand 2s ease-in-out infinite; }
+    .result-fail .hand.right { animation: droopHand 2s ease-in-out infinite 0.3s; }
+
+    @keyframes swayLeft {
+      0%, 100% { transform: translateY(0) rotate(5deg); }
+      50% { transform: translateY(-6px) rotate(-3deg); }
+    }
+    @keyframes pointToCard {
+      0%, 100% { transform: translateY(0) rotate(-12deg) translateX(8px); }
+      50% { transform: translateY(-10px) rotate(-18deg) translateX(16px); }
+    }
+    @keyframes clapLeft {
+      0% { transform: translateX(0) rotate(8deg); }
+      100% { transform: translateX(35px) rotate(-8deg); }
+    }
+    @keyframes clapRight {
+      0% { transform: translateX(0) rotate(-8deg); }
+      100% { transform: translateX(-35px) rotate(8deg); }
+    }
+    @keyframes droopHand {
+      0%, 100% { transform: translateY(0) rotate(5deg); }
+      50% { transform: translateY(12px) rotate(-3deg); }
+    }
+
+    /* ========== 拼音卡片 ========== */
+    .card-area {
+      position: fixed;
+      left: 50%; top: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 4;
+      text-align: center;
+    }
+    .card {
+      width: 520px; aspect-ratio: 1;
+      background: rgba(210,225,205,0.82);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      border: 1.5px solid rgba(180,205,175,0.5);
+      border-radius: 32px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.35), 0 8px 20px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.6);
+      background-image:
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 300 300' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.22'/%3E%3C/svg%3E"),
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.12' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)' opacity='0.1'/%3E%3C/svg%3E");
+      display: flex; align-items: center; justify-content: center;
+      padding: 2.5%;
+      transition: all 0.5s;
+    }
+    .card pinyin-grid { width: 100%; height: 100%; min-width: 0; }
+
+    .card-hint {
+      margin-top: 24px;
+      font-size: 18px; color: rgba(255,255,255,0.5);
+      font-weight: 500; letter-spacing: 2px;
+      transition: opacity 0.4s;
+    }
+    .state-listening .card-hint { opacity: 0; }
+
+    /* ========== 麦克风按钮 ========== */
+    .mic-area {
+      position: fixed;
+      right: 40px; bottom: 40px;
+      z-index: 10;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .mic-button {
+      width: 80px; height: 80px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.7);
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      border: 1.5px solid rgba(255,255,255,0.9);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08), inset 0 4px 8px rgba(255,255,255,1);
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      position: relative;
+      touch-action: none; -webkit-user-select: none; user-select: none;
+    }
+    .mic-button:active { transform: scale(0.92); }
+
+    .state-listening .mic-button {
+      background: rgba(74, 144, 226, 0.25);
+      border-color: rgba(74, 144, 226, 0.5);
+      box-shadow: 0 8px 24px rgba(74, 144, 226, 0.2), inset 0 4px 8px rgba(255,255,255,0.8);
+    }
+
+    /* 声波动画波纹 */
+    .wave-ring {
+      position: absolute; width: 100%; height: 100%;
+      border-radius: 50%;
+      border: 2px solid rgba(74, 144, 226, 0.3);
+      top: 0; left: 0; opacity: 0; pointer-events: none;
+    }
+    .state-listening .wave-ring {
+      animation: waveExpand 1.2s ease-out infinite;
+    }
+    .state-listening .wave-ring:nth-child(2) { animation-delay: 0.4s; }
+    .state-listening .wave-ring:nth-child(3) { animation-delay: 0.8s; }
+    @keyframes waveExpand {
+      0% { transform: scale(1); opacity: 0.6; }
+      100% { transform: scale(2.2); opacity: 0; }
+    }
+
+    /* 音量可视化条 */
+    .volume-bars {
+      position: absolute; bottom: calc(100% + 20px);
+      left: 50%; transform: translateX(-50%);
+      display: flex; align-items: flex-end;
+      gap: 4px; height: 40px;
+      opacity: 0; transition: opacity 0.2s;
+    }
+    .state-listening .volume-bars { opacity: 1; }
+    .vol-bar {
+      width: 4px;
+      background: linear-gradient(to top, rgba(74,144,226,0.6), rgba(74,144,226,0.9));
+      border-radius: 2px;
+      animation: volAnim 0.5s ease-in-out infinite alternate;
+    }
+    .vol-bar:nth-child(1) { height: 16px; animation-delay: 0s; }
+    .vol-bar:nth-child(2) { height: 28px; animation-delay: 0.1s; }
+    .vol-bar:nth-child(3) { height: 36px; animation-delay: 0.2s; }
+    .vol-bar:nth-child(4) { height: 24px; animation-delay: 0.15s; }
+    .vol-bar:nth-child(5) { height: 12px; animation-delay: 0.05s; }
+    @keyframes volAnim {
+      0% { transform: scaleY(0.5); }
+      100% { transform: scaleY(1.2); }
+    }
+
+    /* ========== 庆祝粒子（仅撒花，无弹窗） ========== */
+    .confetti-container {
+      position: fixed; inset: 0;
+      pointer-events: none; z-index: 35;
+      overflow: hidden;
+      display: none;
+    }
+    .confetti-container.show { display: block; }
+    .confetti {
+      position: absolute;
+      width: 10px; height: 10px;
+      top: -10px;
+      animation: confettiFall linear forwards;
+    }
+    @keyframes confettiFall {
+      0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+    }
+
+    /* ========== 暗色模式 ========== */
+    @media (prefers-color-scheme: dark) {
+      body { background: linear-gradient(160deg, #081a1a, #061515 40%, #081a20 70%, #081a1a); }
+      .card { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.1); }
+      .header-title { color: rgba(255,255,255,0.3); }
+      .header-progress { color: rgba(255,255,255,0.25); }
+      .card-hint { color: rgba(255,255,255,0.3); }
+      .robot-head, .robot-body, .hand { background: linear-gradient(135deg, #2a2a35, #1a1a25); }
+      .robot-face { background: #0a0a15; }
+      .robot-neck { background: #4a4a58; }
+      .robot-ear { background: #5a5a68; }
+    }
+
+    /* ========== 响应式 ========== */
+    @media (max-width: 820px) {
+      .robot-area { transform: translate(calc(-50% - 250px), calc(-50% + 10px)) scale(0.32); }
+      .card { width: 360px; }
+      .robot-hands { transform: scale(0.85); }
+    }
+    @media (max-width: 600px) {
+      .robot-area { transform: translate(calc(-50% - 160px), calc(-50% + 10px)) scale(0.22); }
+      .card { width: 260px; }
+      .robot-hands { display: none; }
+      .mic-button { width: 64px; height: 64px; }
+      .mic-area { right: 24px; bottom: 24px; }
+    }
+  </style>
+</head>
+<body>
+  <div id="app" class="state-ready">
+
+    <!-- 背景 -->
+    <div class="bg-decor"></div>
+
+    <!-- 头部 -->
+    <div class="header">
+      <span class="header-title">拼 音 测 评</span>
+      <span class="header-progress" id="progressDisplay">1 / 28</span>
+    </div>
+
+    <!-- 机器人 -->
+    <div class="robot-area" id="robotArea">
+      <div class="robot-wrapper">
+        <div class="robot-head-container">
+          <div class="robot-antenna"></div>
+          <div class="robot-head">
+            <div class="robot-ears"><div class="robot-ear"></div><div class="robot-ear"></div></div>
+            <div class="robot-face">
+              <div class="face-led">
+                <div class="eyes"><div class="eye"></div><div class="eye"></div></div>
+                <div class="mouth"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="robot-neck"></div>
+        <div class="robot-body">
+          <div class="chest-screen">
+            <canvas id="hologramCanvas"></canvas>
+          </div>
+        </div>
+        <div class="robot-hands">
+          <div class="hand left"></div>
+          <div class="hand right"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 拼音卡片 -->
+    <div class="card-area">
+      <div class="card">
+        <pinyin-grid id="pinyinGrid" letter="z" base-path="svg_output" line-color="rgba(180, 180, 200, 0.5)" letter-color="#2a2a3a"></pinyin-grid>
+      </div>
+      <div class="card-hint" id="cardHint">按住麦克风读出这个拼音</div>
+    </div>
+
+    <!-- 麦克风 -->
+    <div class="mic-area">
+      <div class="volume-bars">
+        <div class="vol-bar"></div>
+        <div class="vol-bar"></div>
+        <div class="vol-bar"></div>
+        <div class="vol-bar"></div>
+        <div class="vol-bar"></div>
+      </div>
+      <button class="mic-button" id="micButton">
+        <div class="wave-ring"></div>
+        <div class="wave-ring"></div>
+        <div class="wave-ring"></div>
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="#4a5568" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:2;">
+          <path d="M16 4a4 4 0 0 0-4 4v8a4 4 0 0 0 8 0V8a4 4 0 0 0-4-4Z"/>
+          <path d="M24 16a8 8 0 0 1-16 0"/>
+          <line x1="16" y1="24" x2="16" y2="28"/>
+          <line x1="12" y1="28" x2="20" y2="28"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- 撒花容器 -->
+    <div class="confetti-container" id="confettiContainer"></div>
+
+  </div>
+
+  <script src="pinyin-grid.js"></script>
+  <script>
+    // ========== 全息波浪 ==========
+    const hCanvas = document.getElementById('hologramCanvas');
+    const hCtx = hCanvas.getContext('2d');
+    const hdpr = window.devicePixelRatio || 1;
+    hCanvas.width = 160 * hdpr;
+    hCanvas.height = 95 * hdpr;
+    hCtx.scale(hdpr, hdpr);
+    let phase = 0, amp = 0.08;
+    const waves = [
+      { type: 'surface', s: 0.04, f: 0.04, a: 0.12, o: 0 },
+      { type: 'surface', s: 0.06, f: 0.05, a: 0.08, o: Math.PI },
+      { type: 'line', s: 0.08, f: 0.06, a: 0.9, o: 1, lw: 1.8 },
+      { type: 'line', s: 0.1, f: 0.04, a: 0.5, o: 2, lw: 1.2 },
+      { type: 'dots', s: 0.07, f: 0.05, a: 1, o: 1.5, ds: 1.2, gap: 6 }
+    ];
+    function tickHolo() {
+      hCtx.clearRect(0, 0, 160, 95);
+      var ta = 0.08 + Math.sin(phase * 0.02) * 0.03;
+      amp += (ta - amp) * 0.1; phase++;
+      var tc = { r: 0, g: 210, b: 211 }, cy = 47.5, mh = 38;
+      waves.forEach(function(w) {
+        hCtx.beginPath();
+        var pts = [];
+        for (var x = 0; x <= 160; x += (w.type === 'dots' ? w.gap : 2)) {
+          var dmp = Math.sin(x / 160 * Math.PI);
+          var y = Math.sin(x * w.f + phase * w.s + w.o) * Math.cos(x * w.f * 0.4) * mh * amp * dmp;
+          pts.push({ x: x, y: cy + y });
+        }
+        var cs = tc.r + ',' + tc.g + ',' + tc.b;
+        if (w.type === 'surface') {
+          hCtx.moveTo(0, cy);
+          for (var i = 1; i < pts.length; i++) {
+            var xc = (pts[i-1].x + pts[i].x)/2, yc = (pts[i-1].y + pts[i].y)/2;
+            hCtx.quadraticCurveTo(pts[i-1].x, pts[i-1].y, xc, yc);
+          }
+          hCtx.lineTo(160, cy);
+          hCtx.fillStyle = 'rgba(' + cs + ',' + w.a + ')'; hCtx.fill();
+        } else if (w.type === 'line') {
+          hCtx.moveTo(pts[0].x, pts[0].y);
+          for (var i = 1; i < pts.length; i++) {
+            var xc = (pts[i-1].x + pts[i].x)/2, yc = (pts[i-1].y + pts[i].y)/2;
+            hCtx.quadraticCurveTo(pts[i-1].x, pts[i-1].y, xc, yc);
+          }
+          hCtx.strokeStyle = 'rgba(' + cs + ',' + w.a + ')'; hCtx.lineWidth = w.lw;
+          hCtx.shadowBlur = 10; hCtx.shadowColor = 'rgba(' + cs + ',0.8)';
+          hCtx.stroke(); hCtx.shadowBlur = 0;
+        } else if (w.type === 'dots') {
+          hCtx.fillStyle = 'rgba(' + cs + ',' + w.a + ')';
+          hCtx.shadowBlur = 6; hCtx.shadowColor = 'rgba(' + cs + ',1)';
+          pts.forEach(function(p) { hCtx.beginPath(); hCtx.arc(p.x, p.y, w.ds + amp * 1.5, 0, Math.PI * 2); hCtx.fill(); });
+          hCtx.shadowBlur = 0;
+        }
+      });
+      requestAnimationFrame(tickHolo);
+    }
+    tickHolo();
+
+    // ========== 测评逻辑（接入讯飞 API） ==========
+    var app = document.getElementById('app');
+    var micBtn = document.getElementById('micButton');
+    var cardHint = document.getElementById('cardHint');
+    var progressDisplay = document.getElementById('progressDisplay');
+    var grid = document.getElementById('pinyinGrid');
+    var confettiContainer = document.getElementById('confettiContainer');
+    var resultTimer = null;
+
+    var letters = ['b','p','m','f','d','t','n','l','g','k','h','j','q','x','zh','ch','sh','r','z','c','s','y','w','ɑ','o','e','i','u','ü'];
+    var currentIdx = 0;
+    var isListening = false;
+    var passThreshold = 60; // 综合得分 ≥ 60 算通过
+
+    // ==================== 录音状态 ====================
+    var Rec = {
+      stream: null,
+      ctx: null,
+      pcmBufs: [],
+      recording: false,
+      sampleRate: 16000,
+      resampleRatio: 1,
+      resampleAcc: 0
+    };
+
+    // 键盘快捷键（开发调试用）
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'p' || e.key === 'P') showResult(true);
+      if (e.key === 'f' || e.key === 'F') showResult(false);
+    });
+
+    function updateLetter() {
+      var l = letters[currentIdx];
+      grid.setAttribute('letter', l);
+      progressDisplay.textContent = (currentIdx + 1) + ' / ' + letters.length;
+    }
+
+    function nextLetter() {
+      confettiContainer.classList.remove('show');
+      confettiContainer.innerHTML = '';
+      currentIdx = (currentIdx + 1) % letters.length;
+      updateLetter();
+      backToReady();
+    }
+
+    function retryLetter() {
+      confettiContainer.classList.remove('show');
+      confettiContainer.innerHTML = '';
+      backToReady();
+    }
+
+    function backToReady() {
+      app.className = 'state-ready';
+      cardHint.textContent = '按住麦克风读出这个拼音';
+    }
+
+    // ==================== 录音 ====================
+    function startRecording() {
+      if (Rec.recording) return;
+      console.log('[录音] 请求麦克风...');
+      navigator.mediaDevices.getUserMedia({
+        audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true }
+      }).then(function(stream) {
+        Rec.stream = stream;
+        Rec.recording = true;
+        Rec.pcmBufs = [];
+
+        var ctx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
+        Rec.ctx = ctx;
+        var actualSR = ctx.sampleRate;
+        console.log('[录音] AudioContext 采样率:', actualSR);
+        Rec.resampleRatio = actualSR !== 16000 ? actualSR / 16000 : 1;
+        Rec.resampleAcc = 0;
+
+        var source = ctx.createMediaStreamSource(stream);
+        var processor = ctx.createScriptProcessor(4096, 1, 1);
+        processor.onaudioprocess = function(e) {
+          if (!Rec.recording) return;
+          var input = e.inputBuffer.getChannelData(0);
+          if (Rec.resampleRatio > 1) {
+            var outLen = Math.floor((input.length + Rec.resampleAcc) / Rec.resampleRatio);
+            var buf = new Int16Array(outLen);
+            var idx = 0, acc = Rec.resampleAcc;
+            for (var i = 0; i < outLen; i++) {
+              var pos = acc;
+              var fi = Math.floor(pos);
+              var frac = pos - fi;
+              var s0 = fi < input.length ? input[fi] : input[input.length - 1];
+              var s1 = fi + 1 < input.length ? input[fi + 1] : s0;
+              var val = Math.max(-1, Math.min(1, s0 + (s1 - s0) * frac));
+              buf[idx++] = val < 0 ? val * 0x8000 : val * 0x7FFF;
+              acc += Rec.resampleRatio;
+            }
+            Rec.resampleAcc = acc - input.length;
+            Rec.pcmBufs.push(buf);
+          } else {
+            var buf = new Int16Array(input.length);
+            for (var i = 0; i < input.length; i++) {
+              var s = Math.max(-1, Math.min(1, input[i]));
+              buf[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+            }
+            Rec.pcmBufs.push(buf);
+          }
+        };
+        source.connect(processor);
+        processor.connect(ctx.destination);
+        console.log('[录音] 已开始');
+      }).catch(function(err) {
+        console.error('[录音] 麦克风失败:', err.message);
+        cardHint.textContent = '无法访问麦克风: ' + err.message;
+        isListening = false;
+        app.className = 'state-ready';
+      });
+    }
+
+    function stopRecording(callback) {
+      if (!Rec.recording) { if (callback) callback(null); return; }
+      Rec.recording = false;
+      if (Rec.stream) Rec.stream.getTracks().forEach(function(t) { t.stop(); });
+      if (Rec.ctx) Rec.ctx.close().catch(function(){});
+      console.log('[录音] 已停止');
+
+      var totalSamples = Rec.pcmBufs.reduce(function(sum, b) { return sum + b.length; }, 0);
+      console.log('[录音] 总采样数:', totalSamples);
+
+      if (totalSamples < 160) {
+        console.warn('[录音] 数据过短');
+        if (callback) callback(null);
+        return;
+      }
+
+      // 合并 PCM
+      var allPcm = new Int16Array(totalSamples);
+      var off = 0;
+      for (var i = 0; i < Rec.pcmBufs.length; i++) {
+        allPcm.set(Rec.pcmBufs[i], off);
+        off += Rec.pcmBufs[i].length;
+      }
+      if (callback) callback(allPcm);
+    }
+
+    // ==================== 编码 + 发送后端 ====================
+    function buildWav(pcmInt16, sampleRate) {
+      var channels = 1, bits = 16;
+      var byteRate = sampleRate * channels * bits / 8;
+      var blockAlign = channels * bits / 8;
+      var dataSize = pcmInt16.length * 2;
+      var buf = new ArrayBuffer(44 + dataSize);
+      var v = new DataView(buf);
+      function wStr(off, str) { for (var i = 0; i < str.length; i++) v.setUint8(off + i, str.charCodeAt(i)); }
+      wStr(0, 'RIFF'); v.setUint32(4, 36 + dataSize, true); wStr(8, 'WAVE');
+      wStr(12, 'fmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true);
+      v.setUint16(22, channels, true); v.setUint32(24, sampleRate, true);
+      v.setUint32(28, byteRate, true); v.setUint16(32, blockAlign, true);
+      v.setUint16(34, bits, true); wStr(36, 'data'); v.setUint32(40, dataSize, true);
+      var pcmView = new Int16Array(buf, 44);
+      pcmView.set(pcmInt16);
+      return new Uint8Array(buf);
+    }
+
+    function arrayBufToBase64(buf) {
+      var bytes = new Uint8Array(buf);
+      var binary = '';
+      for (var i = 0; i < bytes.length; i += 8192) {
+        binary += String.fromCharCode.apply(null, bytes.subarray(i, Math.min(i + 8192, bytes.length)));
+      }
+      return btoa(binary);
+    }
+
+    function loadLamejs(callback) {
+      if (typeof lamejs !== 'undefined') { callback(true); return; }
+      console.log('[编码] 加载 lamejs...');
+      var s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js';
+      s.onload = function() { console.log('[编码] lamejs 加载成功'); callback(true); };
+      s.onerror = function() {
+        console.warn('[编码] jsdelivr 失败，尝试 unpkg...');
+        s.src = 'https://unpkg.com/lamejs@1.2.1/lame.min.js';
+        s.onload = function() { callback(true); };
+        s.onerror = function() { console.error('[编码] lamejs 加载失败'); callback(false); };
+      };
+      document.head.appendChild(s);
+    }
+
+    function encodeToMp3(pcmData, callback) {
+      loadLamejs(function(ok) {
+        if (!ok) {
+          // 降级为 WAV
+          console.warn('[编码] lamejs 不可用，改用 WAV');
+          var wav = buildWav(pcmData, 16000);
+          var b64 = arrayBufToBase64(wav.buffer);
+          callback(b64, 'lame'); // 用 lame 编码格式，讯飞会自动识别
+          return;
+        }
+        try {
+          var mp3enc = new lamejs.Mp3Encoder(1, 16000, 128);
+          var mp3Out = [];
+          var blockSize = 1152;
+          for (var i = 0; i < pcmData.length; i += blockSize) {
+            var chunk = pcmData.subarray(i, Math.min(i + blockSize, pcmData.length));
+            var buf = mp3enc.encodeBuffer(chunk);
+            if (buf && buf.length > 0) mp3Out.push(buf);
+          }
+          var flush = mp3enc.flush();
+          if (flush && flush.length > 0) mp3Out.push(flush);
+
+          var totalLen = mp3Out.reduce(function(s, b) { return s + b.length; }, 0);
+          var mp3Bytes = new Uint8Array(totalLen);
+          var offset = 0;
+          for (var j = 0; j < mp3Out.length; j++) {
+            mp3Bytes.set(mp3Out[j], offset);
+            offset += mp3Out[j].length;
+          }
+          console.log('[编码] MP3 编码完成:', totalLen, 'bytes');
+          var b64 = arrayBufToBase64(mp3Bytes.buffer);
+          callback(b64, 'lame');
+        } catch (err) {
+          console.error('[编码] MP3 失败:', err.message);
+          var wav = buildWav(pcmData, 16000);
+          var b64 = arrayBufToBase64(wav.buffer);
+          callback(b64, 'lame');
+        }
+      });
+    }
+
+    // ==================== 主流程 ====================
+    function startListening(e) {
+      e.preventDefault();
+      if (isListening) return;
+      if (resultTimer) { clearTimeout(resultTimer); resultTimer = null; }
+      if (app.classList.contains('result-pass') || app.classList.contains('result-fail')) {
+        confettiContainer.classList.remove('show');
+        confettiContainer.innerHTML = '';
+        app.className = 'state-ready';
+      }
+      isListening = true;
+      app.classList.remove('state-ready', 'result-pass', 'result-fail');
+      app.classList.add('state-listening');
+      cardHint.textContent = '大声读出来...';
+      startRecording();
+    }
+
+    function stopListening(e) {
+      e.preventDefault();
+      if (!isListening) return;
+      isListening = false;
+      app.classList.remove('state-listening');
+      cardHint.textContent = '正在评测中';
+
+      var dots = 0;
+      var thinking = setInterval(function() {
+        dots = (dots + 1) % 4;
+        cardHint.textContent = '正在评测中' + '.'.repeat(dots);
+      }, 300);
+
+      stopRecording(function(pcmData) {
+        if (!pcmData) {
+          clearInterval(thinking);
+          cardHint.textContent = '录音失败，再试一次';
+          setTimeout(function() { app.className = 'state-ready'; }, 1500);
+          return;
+        }
+
+        encodeToMp3(pcmData, function(b64, encoding) {
+          if (!b64) {
+            clearInterval(thinking);
+            cardHint.textContent = '音频编码失败';
+            setTimeout(function() { app.className = 'state-ready'; }, 1500);
+            return;
+          }
+
+          // 发送到后端 API
+          fetch('/api/evaluate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              letter: letters[currentIdx],
+              audio: b64,
+              encoding: encoding
+            })
+          })
+          .then(function(resp) {
+            if (!resp.ok) return resp.json().then(function(err) { throw new Error(err.detail || 'HTTP ' + resp.status); });
+            return resp.json();
+          })
+          .then(function(data) {
+            clearInterval(thinking);
+            console.log('[评测] 结果:', '得分=' + data.overall, '参考字=' + data.ref_char, 'passed=' + data.passed);
+            showResult(data.passed);
+          })
+          .catch(function(err) {
+            clearInterval(thinking);
+            console.error('[评测] 失败:', err.message || err);
+            cardHint.textContent = '评测失败，再试一次';
+            setTimeout(function() { app.className = 'state-ready'; }, 1500);
+          });
+        });
+      });
+    }
+
+    // 显示结果
+    function showResult(passed) {
+      if (passed) {
+        app.className = 'result-pass';
+        cardHint.textContent = '太棒啦！🎉';
+        spawnConfetti();
+        resultTimer = setTimeout(nextLetter, 2800);
+      } else {
+        app.className = 'result-fail';
+        cardHint.textContent = '再想想哦...';
+        resultTimer = setTimeout(retryLetter, 2200);
+      }
+    }
+
+    // 撒花效果
+    function spawnConfetti() {
+      var colors = ['#FF6B6B', '#FFD93D', '#6BCB77', '#4D96FF', '#FF6B9D', '#C084FC', '#FB923C'];
+      confettiContainer.innerHTML = '';
+      confettiContainer.classList.add('show');
+      for (var i = 0; i < 60; i++) {
+        var el = document.createElement('div');
+        el.className = 'confetti';
+        var c = colors[Math.floor(Math.random() * colors.length)];
+        var size = 6 + Math.random() * 8;
+        var left = Math.random() * 100;
+        var delay = Math.random() * 2;
+        var dur = 2 + Math.random() * 2;
+        var shape = Math.random() > 0.5 ? '50%' : '2px';
+        el.style.cssText = 'left:' + left + '%;width:' + size + 'px;height:' + size + 'px;background:' + c + ';border-radius:' + shape + ';animation-delay:' + delay + 's;animation-duration:' + dur + 's;';
+        confettiContainer.appendChild(el);
+      }
+    }
+
+    // ========== 麦克风事件 ==========
+    micBtn.addEventListener('mousedown', startListening);
+    micBtn.addEventListener('touchstart', startListening, { passive: false });
+    document.addEventListener('mouseup', stopListening);
+    document.addEventListener('touchend', stopListening);
+    document.addEventListener('touchcancel', stopListening);
+
+    // ========== 初始化 ==========
+    updateLetter();
+  </script>
+</body>
+</html>

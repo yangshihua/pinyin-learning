@@ -1,0 +1,1746 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="拼音学习">
+  <meta name="theme-color" content="#FFB3BA">
+  <title>拼音学习</title>
+  <link rel="icon" type="image/svg+xml" href="/logo_full_color.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      width: 100vw; height: 100vh; overflow: hidden;
+      font-family: -apple-system, 'SF Pro Display', 'SF Pro', 'Helvetica Neue', system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    #app {
+      position: relative;
+      width: 100%; height: 100%;
+      overflow: hidden;
+    }
+
+    /* ========== 背景层 ========== */
+    .bg-layer {
+      position: fixed; inset: 0;
+      pointer-events: none;
+      transition: opacity 0.8s ease;
+    }
+    .bg-welcome {
+      background:
+        radial-gradient(ellipse at 20% 20%, rgba(255, 154, 158, 0.45) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 15%, rgba(254, 207, 139, 0.4) 0%, transparent 45%),
+        radial-gradient(ellipse at 15% 80%, rgba(161, 196, 253, 0.45) 0%, transparent 45%),
+        radial-gradient(ellipse at 85% 80%, rgba(194, 233, 251, 0.4) 0%, transparent 45%),
+        radial-gradient(ellipse at 50% 50%, rgba(243, 166, 231, 0.3) 0%, transparent 55%),
+        linear-gradient(135deg, #ffecd2 0%, #fcb69f 15%, #fbc2eb 30%, #a6c1ee 50%, #c2e9fb 70%, #d4fc79 85%, #ffecd2 100%);
+      z-index: 0;
+    }
+    .bg-welcome::before {
+      content: '';
+      position: fixed; inset: 0;
+      background: linear-gradient(60deg, rgba(255,107,107,0.06), rgba(255,179,71,0.06), rgba(72,219,251,0.06), rgba(107,203,119,0.06), rgba(155,89,182,0.06), rgba(255,107,107,0.06));
+      background-size: 300% 300%;
+      animation: auroraShift 10s ease infinite;
+      pointer-events: none;
+    }
+    @keyframes auroraShift { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+    .bg-teaching {
+      background: linear-gradient(160deg, #0d2b2b 0%, #0a2020 40%, #0d2535 70%, #0d2b2b 100%);
+      z-index: 1;
+      opacity: 0;
+    }
+    .bg-teaching::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image:
+        radial-gradient(circle at 15% 20%, rgba(180,160,200,0.08) 0%, transparent 8%),
+        radial-gradient(circle at 85% 15%, rgba(160,180,200,0.08) 0%, transparent 6%),
+        radial-gradient(circle at 10% 80%, rgba(200,180,160,0.06) 0%, transparent 7%),
+        radial-gradient(circle at 90% 85%, rgba(180,200,180,0.06) 0%, transparent 5%);
+      pointer-events: none;
+    }
+    .teaching .bg-welcome { opacity: 0; }
+    .teaching .bg-teaching { opacity: 1; }
+    .drawing .bg-welcome, .drawing .bg-teaching { opacity: 0; }
+
+    .bg-drawing {
+      background: linear-gradient(120deg, rgba(255,218,224,0.9) 0%, rgba(240,218,255,0.9) 30%, rgba(196,224,255,0.9) 70%, rgba(200,245,210,0.9) 100%);
+      z-index: 1;
+      opacity: 0;
+    }
+    .drawing .bg-drawing { opacity: 1; }
+
+    /* ========== 左侧画板面板 ========== */
+    .draw-left-panel {
+      position: fixed;
+      left: 0; top: 0;
+      width: 220px; height: 100vh;
+      background: #e6edf5;
+      border-right: 1px solid rgba(255,255,255,0.5);
+      z-index: 2;
+      opacity: 0;
+      transition: opacity 0.6s ease;
+      pointer-events: none;
+    }
+    .drawing .draw-left-panel { opacity: 1; pointer-events: auto; }
+
+    /* ========== 画板工具区 ========== */
+    .draw-tools {
+      position: fixed;
+      left: 240px; top: 0;
+      width: 80px; height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 24px;
+      padding-bottom: 20px;
+      z-index: 2;
+      opacity: 0;
+      transition: opacity 0.6s ease 0.15s;
+      pointer-events: none;
+    }
+    .drawing .draw-tools { opacity: 1; pointer-events: auto; }
+    .palette-title { font-size: 14px; color: #666; font-weight: 600; margin-bottom: 20px; letter-spacing: 1px; text-shadow: 0 1px 2px rgba(255,255,255,0.8); }
+    .palette-colors { display: flex; flex-direction: column; align-items: center; width: 100%; overflow-y: auto; scrollbar-width: none; flex: 1; padding-top: 6px; }
+    .palette-colors::-webkit-scrollbar { display: none; }
+    .color-swatch {
+      width: 42px; height: 42px;
+      border-radius: 40% 60% 55% 45% / 50% 45% 55% 50%;
+      margin-bottom: 14px;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      box-shadow: 8px 8px 16px rgba(0,0,0,0.1), inset 4px 4px 8px rgba(255,255,255,0.6), inset -4px -4px 12px rgba(0,0,0,0.15);
+    }
+    .color-swatch:hover { transform: scale(1.15) rotate(5deg); }
+    .color-swatch:active { transform: scale(0.95); }
+    .color-swatch.selected { transform: scale(1.2); box-shadow: 0 0 0 3px #fff, 0 0 0 5px rgba(0,0,0,0.3); }
+    .color-red    { background: linear-gradient(135deg, #ff8a80, #f44336); }
+    .color-orange { background: linear-gradient(135deg, #ffd180, #ff9800); }
+    .color-yellow { background: linear-gradient(135deg, #ffff8d, #fbc02d); }
+    .color-green  { background: linear-gradient(135deg, #b9f6ca, #4caf50); }
+    .color-cyan   { background: linear-gradient(135deg, #84ffff, #00acc1); }
+    .color-blue   { background: linear-gradient(135deg, #8c9eff, #3949ab); }
+    .color-purple { background: linear-gradient(135deg, #ea80fc, #8e24aa); }
+    .color-black  { background: linear-gradient(135deg, #757575, #212121); }
+
+    /* ========== 画布区 ========== */
+    .draw-canvas-area {
+      position: fixed;
+      left: 340px; top: 20px;
+      right: 20px; bottom: 20px;
+      z-index: 2;
+      opacity: 0;
+      transition: opacity 0.5s ease 0.25s;
+      pointer-events: none;
+    }
+    .drawing .draw-canvas-area { opacity: 1; pointer-events: auto; }
+    .draw-canvas {
+      display: block;
+      width: 100%; height: 100%;
+      border-radius: 20px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+      border: 2px solid rgba(255,255,255,0.9);
+      cursor: crosshair;
+      touch-action: none;
+      background-color: #F7F2E3;
+      background-image:
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 300 300' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.12'/%3E%3C/svg%3E"),
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.15' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)' opacity='0.06'/%3E%3C/svg%3E");
+    }
+
+    /* 生图科技感加载 */
+    .magic-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 10;
+      background: rgba(5, 8, 15, 0.7);
+      border-radius: 20px;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+    }
+    .magic-overlay.active { display: flex; }
+    .magic-ring-group {
+      position: relative;
+      width: 100px; height: 100px;
+      margin-bottom: 24px;
+    }
+    .magic-ring {
+      position: absolute;
+      inset: 0;
+      border: 2px solid #00d2d3;
+      border-radius: 50%;
+      animation: techRingPulse 1.8s ease-out infinite;
+      opacity: 0;
+    }
+    .magic-ring:nth-child(1) { animation-delay: 0s; }
+    .magic-ring:nth-child(2) { animation-delay: 0.4s; }
+    .magic-ring:nth-child(3) { animation-delay: 0.8s; }
+    .magic-ring:nth-child(4) { animation-delay: 1.2s; }
+    @keyframes techRingPulse {
+      0% { width: 10%; height: 10%; top: 45%; left: 45%; opacity: 0.8; }
+      100% { width: 100%; height: 100%; top: 0; left: 0; opacity: 0; }
+    }
+    .magic-dot {
+      position: absolute;
+      top: 50%; left: 50%;
+      width: 8px; height: 8px;
+      background: #00d2d3;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      box-shadow: 0 0 12px #00d2d3, 0 0 24px rgba(0,210,211,0.5);
+      animation: techDotGlow 1s ease-in-out infinite alternate;
+    }
+    @keyframes techDotGlow {
+      0% { box-shadow: 0 0 8px #00d2d3, 0 0 16px rgba(0,210,211,0.3); }
+      100% { box-shadow: 0 0 20px #00d2d3, 0 0 40px rgba(0,210,211,0.6); }
+    }
+    /* 扫描线 */
+    .magic-scan {
+      width: 160px; height: 2px;
+      background: linear-gradient(90deg, transparent, #00d2d3, transparent);
+      animation: techScan 1.2s ease-in-out infinite;
+      border-radius: 1px;
+      margin-bottom: 16px;
+    }
+    @keyframes techScan {
+      0% { transform: translateX(-60px) scaleX(0.3); opacity: 0; }
+      40% { opacity: 1; }
+      100% { transform: translateX(60px) scaleX(0.3); opacity: 0; }
+    }
+    .magic-text {
+      font-size: 16px;
+      font-weight: 600;
+      color: rgba(0, 210, 211, 0.85);
+      letter-spacing: 4px;
+      font-family: 'Courier New', monospace;
+      text-transform: uppercase;
+      animation: magicTextBlink 1.4s ease-in-out infinite;
+    }
+    @keyframes magicTextBlink {
+      0%, 100% { opacity: 0.5; }
+      50% { opacity: 1; }
+    }
+
+    /* ========== 机器人（固定定位，状态切换过渡） ========== */
+    .robot-stage {
+      position: fixed;
+      z-index: 5;
+      transition: all 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .welcome .robot-stage {
+      left: 50%; top: 50%;
+      transform: translate(-50%, calc(-50% - 20px)) scale(1);
+    }
+    .teaching .robot-stage {
+      left: 50%; top: 50%;
+      transform: translate(calc(-50% - 380px), -50%) scale(0.5) rotate(-5deg);
+    }
+    .drawing .robot-stage {
+      left: 110px; top: calc(100vh - 440px);
+      transform: translate(-50%, 0) scale(0.45);
+    }
+
+    .robot-wrapper {
+      display: flex; flex-direction: column; align-items: center;
+      animation: float 4s ease-in-out infinite;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-12px); }
+    }
+    .robot-head-container { position: relative; z-index: 3; display: flex; flex-direction: column; align-items: center; }
+    .robot-antenna { width: 6px; height: 24px; background: #d1d8e0; border-radius: 3px; position: relative; z-index: 1; }
+    .robot-antenna::before { content: ''; position: absolute; top: -8px; left: -4px; width: 14px; height: 14px; background: #00d2d3; border-radius: 50%; box-shadow: 0 0 12px #00d2d3; animation: blink 1.5s infinite alternate; }
+    @keyframes blink { 0% { opacity: 0.5; box-shadow: 0 0 3px #00d2d3; } 100% { opacity: 1; box-shadow: 0 0 14px #00d2d3,0 0 28px #00d2d3; } }
+    .robot-head { width: 160px; height: 120px; background: linear-gradient(135deg, #fff 0%, #e1e8f0 100%); border-radius: 70px 70px 55px 55px; margin-top: -3px; box-shadow: 0 12px 24px rgba(0,0,0,0.08), inset -6px -6px 18px rgba(0,0,0,0.05), inset 6px 6px 12px rgba(255,255,255,0.8); display: flex; justify-content: center; align-items: center; padding-bottom: 10px; position: relative; }
+    .robot-ears { position: absolute; width: 190px; height: 42px; left: -15px; top: 40px; display: flex; justify-content: space-between; z-index: -1; }
+    .robot-ear { width: 22px; height: 42px; background: #a4b0be; border-radius: 10px; box-shadow: inset 2px 2px 6px rgba(0,0,0,0.2); }
+    .robot-face { width: 120px; height: 72px; background: #151a22; border-radius: 26px; box-shadow: inset 0 5px 12px rgba(0,0,0,0.8); display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; overflow: hidden; }
+    .robot-face::before { content: ''; position: absolute; top: 0; left: 10%; width: 80%; height: 14px; background: linear-gradient(to bottom, rgba(255,255,255,0.15), transparent); border-radius: 12px; }
+    .face-led { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+    .teaching .face-led, .drawing .face-led { transform: translateX(8px); }
+    .eyes { display: flex; gap: 28px; }
+    .welcome .eyes { animation: none; }
+    .teaching .eyes { animation: lookAtCard 3s ease-in-out infinite; }
+    .drawing .eyes { animation: lookAround 4s ease-in-out infinite; }
+    @keyframes lookAtCard { 0%,100% { transform: translateX(2px); } 50% { transform: translateX(4px); } }
+    @keyframes lookAround { 0%,100% { transform: translateX(0); } 20%,40% { transform: translateX(4px); } 60%,80% { transform: translateX(-4px); } }
+    .eye { width: 16px; height: 14px; background: #00d2d3; border-radius: 6px; box-shadow: 0 0 10px #00d2d3; position: relative; }
+    .eye::after { content: ''; position: absolute; top: 2px; right: 3px; width: 4px; height: 4px; background: rgba(255,255,255,0.8); border-radius: 50%; }
+    .mouth { width: 22px; height: 6px; background: #00d2d3; border-radius: 3px; box-shadow: 0 0 12px #00d2d3; transition: all 0.3s; }
+    .teaching .mouth, .drawing .mouth { width: 20px; height: 8px; border-radius: 0 0 10px 10px; animation: happyMouth 4s ease-in-out infinite; }
+    @keyframes happyMouth { 0%,100% { transform: scaleX(1); } 30% { transform: scaleX(1.3); } }
+    .robot-neck { width: 60px; height: 22px; background: #8895a5; border-radius: 8px; margin-top: -12px; z-index: 2; box-shadow: inset 0 4px 8px rgba(0,0,0,0.3); }
+    .robot-body { width: 220px; height: 190px; background: linear-gradient(135deg, #fff 0%, #e1e8f0 100%); border-radius: 80px 80px 110px 110px; margin-top: -10px; z-index: 3; position: relative; box-shadow: 0 18px 36px rgba(0,0,0,0.1), inset -8px -8px 20px rgba(0,0,0,0.06), inset 8px 8px 20px rgba(255,255,255,0.9); display: flex; justify-content: center; align-items: center; padding-top: 12px; }
+    .chest-screen { width: 160px; height: 95px; background: #05080f; border-radius: 32px; box-shadow: inset 0 8px 20px rgba(0,0,0,0.9), 0 3px 0 rgba(255,255,255,0.8); position: relative; overflow: hidden; display: flex; justify-content: center; align-items: center; }
+    .chest-screen::after { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 50%; background: linear-gradient(to bottom, rgba(255,255,255,0.12), transparent); pointer-events: none; }
+    .chest-screen canvas { display: block; width: 100%; height: 100%; }
+    .robot-hands { position: absolute; top: 190px; width: 280px; display: flex; justify-content: space-between; z-index: 4; pointer-events: none; }
+    .hand { width: 38px; height: 60px; background: linear-gradient(135deg, #fff 0%, #d1d8e0 100%); border-radius: 18px; box-shadow: 0 10px 20px rgba(0,0,0,0.1), inset -3px -3px 8px rgba(0,0,0,0.05); }
+    .hand.left { animation: float-hand 3.5s ease-in-out infinite reverse; }
+    .welcome .hand.right { animation: float-hand 4.2s ease-in-out infinite; }
+    .teaching .hand.right { animation: pointToCard 3s ease-in-out infinite; }
+    .drawing .hand.right { animation: waveHandRight 4s ease-in-out infinite; }
+    @keyframes float-hand { 0%,100% { transform: translateY(0) rotate(5deg); } 50% { transform: translateY(-10px) rotate(-5deg); } }
+    @keyframes pointToCard { 0%,100% { transform: translateY(0) rotate(-20deg) translateX(15px); } 30%,70% { transform: translateY(-15px) rotate(-35deg) translateX(30px); } 50% { transform: translateY(-20px) rotate(-40deg) translateX(35px); } }
+    @keyframes waveHandRight { 0%,100% { transform: translateY(0) rotate(-8deg); } 50% { transform: translateY(-6px) rotate(-12deg); } }
+
+    /* ========== iPad 低性能优化 ========== */
+    @media (hover: none) and (pointer: coarse) {
+      .robot-wrapper { will-change: transform; }
+      .robot-antenna::before { box-shadow: none !important; animation: none !important; }
+      .eye { box-shadow: none !important; will-change: transform; }
+      .mouth { box-shadow: none !important; }
+      .state-listening .robot-head { box-shadow: 0 6px 12px rgba(0,0,0,0.08) !important; }
+      /* 大幅减少 box-shadow 层数 */
+      .chest-screen { box-shadow: inset 0 4px 10px rgba(0,0,0,0.9), 0 2px 0 rgba(255,255,255,0.6) !important; }
+      .hand { box-shadow: 0 5px 10px rgba(0,0,0,0.1), inset -2px -2px 5px rgba(0,0,0,0.05) !important; }
+      .robot-head { box-shadow: 0 6px 12px rgba(0,0,0,0.08) !important; }
+      .robot-body { box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important; }
+    }
+    /* JS 检测到的低性能设备（更可靠） */
+    .is-low-perf .robot-wrapper { will-change: transform; transform: translateZ(0); }
+    .is-low-perf .robot-head { box-shadow: 0 6px 12px rgba(0,0,0,0.08) !important; }
+    .is-low-perf .robot-body { box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important; }
+    .is-low-perf .bg-welcome {
+      background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 50%, #c2e9fb 100%) !important;
+    }
+    .is-low-perf .bg-welcome::before { animation: none !important; }
+    .is-low-perf .bg-welcome::after { animation: none !important; }
+    .is-low-perf .teaching .card {
+      background-image: none !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.6) !important;
+    }
+
+    /* ========== 机器人情绪状态 ========== */
+
+    /* 天线信号环 */
+    .antenna-signal {
+      position: absolute; top: -20px; left: 50%; transform: translateX(-50%);
+      pointer-events: none; display: none; z-index: 2;
+    }
+    .state-listening .antenna-signal { display: block; }
+    .antenna-signal .ring {
+      position: absolute; border: 2px solid #00d2d3; border-radius: 50%;
+      animation: signalExpand 1.2s ease-out infinite; opacity: 0;
+    }
+    .antenna-signal .ring:nth-child(1) { animation-delay: 0s; }
+    .antenna-signal .ring:nth-child(2) { animation-delay: 0.4s; }
+    .antenna-signal .ring:nth-child(3) { animation-delay: 0.8s; }
+    @keyframes signalExpand {
+      0% { width: 6px; height: 6px; opacity: 0.7; }
+      100% { width: 70px; height: 70px; opacity: 0; }
+    }
+
+    /* state-ready: 指向卡片 */
+    .state-ready .hand.right { animation: pointToCard 3s ease-in-out infinite; }
+    .state-ready .eyes { animation: lookAtCard 3s ease-in-out infinite; }
+    .state-ready .face-led { transform: translateX(8px); }
+
+    /* state-listening: 同 ready + 天线信号 */
+    .state-listening .hand.right { animation: pointToCard 3s ease-in-out infinite; }
+    .state-listening .eyes { animation: lookAtCard 3s ease-in-out infinite; }
+    .state-listening .face-led { transform: translateX(8px); }
+
+    /* result-pass: 鼓掌 + 金色眼睛 + 撒花 */
+    .result-pass .eye { background: #ffd700; box-shadow: 0 0 18px #ffd700, 0 0 30px rgba(255,215,0,0.5); width: 18px; height: 16px; }
+    .result-pass .eye::after { content: '⭐'; background: none; top: -4px; right: -2px; font-size: 10px; }
+    .result-pass .mouth { width: 28px; height: 14px; border-radius: 0 0 14px 14px; background: #ffd700; box-shadow: 0 0 14px #ffd700; }
+    .result-pass .robot-head { box-shadow: 0 12px 24px rgba(0,0,0,0.08), 0 0 40px rgba(255,215,0,0.4), 0 0 80px rgba(255,215,0,0.2), inset -6px -6px 18px rgba(0,0,0,0.05), inset 6px 6px 12px rgba(255,255,255,0.8); }
+    .result-pass .hand.left { animation: clapLeft 0.4s ease-in-out 6; }
+    .result-pass .hand.right { animation: clapRight 0.4s ease-in-out 6; }
+    @keyframes clapLeft {
+      0%, 100% { transform: translateX(0); }
+      50% { transform: translateX(30px) rotate(-15deg); }
+    }
+    @keyframes clapRight {
+      0%, 100% { transform: translateX(0); }
+      50% { transform: translateX(-30px) rotate(15deg); }
+    }
+
+    /* 撒花 confetti */
+    .confetti-burst {
+      position: absolute; top: -30px; left: 50%; transform: translateX(-50%);
+      width: 200px; height: 200px; pointer-events: none; display: none; z-index: 10;
+    }
+    .result-pass .confetti-burst { display: block; }
+    .confetti-burst::before, .confetti-burst::after {
+      content: ''; position: absolute; width: 100%; height: 100%;
+    }
+    .confetti-burst::before {
+      background:
+        radial-gradient(2px 2px at 20% 0%, #ff6b6b, transparent),
+        radial-gradient(3px 3px at 40% 5%, #ffd93d, transparent),
+        radial-gradient(2px 2px at 60% 0%, #6bcb77, transparent),
+        radial-gradient(3px 3px at 80% 5%, #4d96ff, transparent),
+        radial-gradient(2px 2px at 10% 10%, #ff922b, transparent),
+        radial-gradient(3px 3px at 50% 0%, #ff6b6b, transparent),
+        radial-gradient(2px 2px at 70% 8%, #ffd93d, transparent),
+        radial-gradient(3px 3px at 90% 3%, #cc5de8, transparent);
+      animation: confettiFall 1.4s ease-out forwards;
+    }
+    .confetti-burst::after {
+      background:
+        radial-gradient(2px 2px at 30% 15%, #4d96ff, transparent),
+        radial-gradient(3px 3px at 55% 10%, #ff922b, transparent),
+        radial-gradient(2px 2px at 75% 12%, #6bcb77, transparent),
+        radial-gradient(3px 3px at 15% 20%, #cc5de8, transparent),
+        radial-gradient(2px 2px at 45% 8%, #ff6b6b, transparent),
+        radial-gradient(3px 3px at 85% 15%, #ffd93d, transparent);
+      animation: confettiFall 1.4s ease-out 0.3s forwards;
+    }
+    @keyframes confettiFall {
+      0% { transform: translateY(0) scale(1); opacity: 1; }
+      100% { transform: translateY(60px) scale(0.3); opacity: 0; }
+    }
+
+    /* result-fail: 沮丧 */
+    .result-fail .eye { background: #556677; box-shadow: none; width: 14px; height: 12px; }
+    .result-fail .eye::after { display: none; }
+    .result-fail .mouth { width: 16px; height: 4px; border-radius: 10px 10px 0 0; background: #556677; box-shadow: none; }
+    .result-fail .robot-head { animation: headShake 0.5s ease-in-out 3; }
+    .result-fail .hand.left, .result-fail .hand.right { transform: translateY(20px) rotate(10deg); transition: transform 0.3s; }
+    @keyframes headShake {
+      0%, 100% { transform: rotate(0); }
+      25% { transform: rotate(-5deg); }
+      75% { transform: rotate(5deg); }
+    }
+
+    /* 表情：不开心 */
+    .robot-stage.mood-sad .eye { background: #556677; box-shadow: none; }
+    .robot-stage.mood-sad .eye::after { display: none; }
+    .robot-stage.mood-sad .mouth { width: 16px; height: 4px; border-radius: 10px 10px 0 0; background: #556677; box-shadow: none; }
+
+    /* ========== 拼音格卡片 ========== */
+    .card {
+      position: fixed;
+      left: 50%; top: 50%;
+      width: 520px; aspect-ratio: 1;
+      z-index: 4;
+      display: flex; align-items: center; justify-content: center;
+      padding: 2.5%;
+      transition: opacity 0.9s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.9s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .start-btn {
+      position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+      z-index: 100; padding: 18px 56px; font-size: 22px; font-weight: 700;
+      color: #fff; background: linear-gradient(135deg, #a78bfa, #7c3aed);
+      border: none; border-radius: 50px; cursor: pointer;
+      box-shadow: 0 8px 24px rgba(124,58,237,0.4);
+      transition: opacity 0.4s, transform 0.4s;
+    }
+    .teaching .start-btn, .drawing .start-btn { opacity: 0; pointer-events: none; transform: translateX(-50%) scale(0.8); }
+    .welcome .card {
+      transform: translate(-50%, -50%) translateX(calc(100vw + 100%)) scale(0);
+      opacity: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+    .teaching .card {
+      transform: translate(-50%, -50%);
+      background: rgba(210,225,205,0.82);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      border: 1.5px dashed rgba(180,205,175,0.5);
+      border-radius: 32px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.35), 0 8px 20px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.6);
+      background-image:
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 300 300' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.22'/%3E%3C/svg%3E"),
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.12' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)' opacity='0.1'/%3E%3C/svg%3E");
+      opacity: 1;
+      cursor: pointer;
+    }
+    .drawing .card {
+      left: 30px; top: 24px;
+      transform: none;
+      width: 180px; height: 180px;
+      background: #f4f8fc;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+      border: 1px solid rgba(200,215,230,0.5);
+      border-radius: 16px;
+      box-shadow: 0 8px 16px rgba(180,190,210,0.3), inset 0 2px 4px rgba(255,255,255,1);
+      display: flex; align-items: center; justify-content: center;
+      padding: 12px;
+      opacity: 1;
+      cursor: default;
+      pointer-events: none;
+    }
+    .card pinyin-grid { width: 100%; height: 100%; min-width: 0; }
+
+    /* ========== 暗色模式 ========== */
+    @media (prefers-color-scheme: dark) {
+      .bg-welcome {
+        background:
+          radial-gradient(ellipse at 20% 20%, rgba(180,60,70,0.35) 0%, transparent 50%),
+          radial-gradient(ellipse at 80% 15%, rgba(180,120,50,0.3) 0%, transparent 45%),
+          radial-gradient(ellipse at 15% 80%, rgba(50,80,160,0.35) 0%, transparent 45%),
+          radial-gradient(ellipse at 85% 80%, rgba(60,140,170,0.3) 0%, transparent 45%),
+          radial-gradient(ellipse at 50% 50%, rgba(140,60,150,0.25) 0%, transparent 55%),
+          linear-gradient(135deg, #1a1020, #1a1410 20%, #0e1520 40%, #101a18 60%, #181025 80%, #1a1020);
+      }
+      .bg-teaching {
+        background:
+          radial-gradient(ellipse at 45% 50%, rgba(60,50,80,0.3) 0%, transparent 50%),
+          radial-gradient(ellipse at 30% 30%, rgba(50,40,70,0.5) 0%, transparent 40%),
+          radial-gradient(ellipse at 70% 70%, rgba(40,50,70,0.4) 0%, transparent 40%),
+          linear-gradient(160deg, #1a1820, #201828 30%, #182025 60%, #1a1820);
+      }
+      .bg-drawing {
+        background:
+          radial-gradient(ellipse at 30% 30%, rgba(80,50,60,0.3) 0%, transparent 40%),
+          radial-gradient(ellipse at 70% 70%, rgba(40,60,70,0.3) 0%, transparent 40%),
+          linear-gradient(120deg, #1a1820, #201820 30%, #182025 70%, #1a2018);
+      }
+      .draw-left-panel { background: #1a1a25; border-right-color: rgba(255,255,255,0.08); }
+      .teaching .card, .drawing .card {
+        background: rgba(255,255,255,0.06);
+        border-color: rgba(255,255,255,0.1);
+        box-shadow: 0 20px 50px rgba(0,0,0,0.3), 0 8px 20px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.1);
+      }
+      .robot-head, .robot-body, .hand { background: linear-gradient(135deg, #2a2a35, #1a1a25); }
+      .robot-face { background: #0a0a15; }
+      .robot-neck { background: #4a4a58; }
+      .robot-ear { background: #5a5a68; }
+      .draw-canvas { background: #1e1e2a; }
+      .palette-title { color: #888; }
+    }
+
+    /* ========== 响应式 ========== */
+    @media (max-width: 820px) {
+      .teaching .robot-stage {
+        transform: translate(calc(-50% - 260px), -50%) scale(0.42) rotate(-5deg);
+      }
+      .teaching .card { width: 360px; }
+      .drawing .robot-stage { left: 110px; top: calc(100vh - 410px); transform: translate(-50%, 0) scale(0.38); }
+      .drawing .card { width: 160px; height: 160px; left: 30px; top: 20px; padding: 10px; }
+      .draw-tools { left: 200px; width: 60px; }
+      .color-swatch { width: 36px; height: 36px; margin-bottom: 12px; }
+      .draw-canvas-area { left: 280px; }
+      .draw-left-panel { width: 180px; }
+    }
+    @media (max-width: 600px) {
+      .teaching .robot-stage {
+        transform: translate(calc(-50% - 180px), -50%) scale(0.3) rotate(-5deg);
+      }
+      .teaching .card { width: 260px; }
+      .robot-hands { display: none; }
+      .drawing .robot-stage { left: 90px; top: calc(100vh - 380px); transform: translate(-50%, 0) scale(0.3); }
+      .drawing .card { width: 130px; height: 130px; left: 20px; top: 16px; padding: 8px; }
+      .draw-left-panel { width: 150px; }
+      .draw-tools { left: 160px; width: 50px; }
+      .color-swatch { width: 30px; height: 30px; margin-bottom: 10px; }
+      .draw-canvas-area { left: 220px; top: 12px; right: 12px; bottom: 12px; }
+      .palette-title { font-size: 12px; }
+    }
+
+    /* ========== 字卡（例字教学） ========== */
+    .char-card {
+      display: none;
+      position: fixed; left: 50%; top: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 4;
+      width: 520px; aspect-ratio: 1;
+      background: rgba(210,225,205,0.82);
+      backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+      border: 1.5px dashed rgba(180,205,175,0.5);
+      border-radius: 32px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.6);
+      flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+    }
+    .teaching .char-card.visible { display: flex; }
+    .char-card-pinyin {
+      font-family: 'Klee One', 'Klee', 'Yuanti SC', cursive !important;
+      font-weight: 600; font-size: 56px;
+      color: #4a6a5a; line-height: 1.1; letter-spacing: 4px;
+    }
+    .char-card-char {
+      font-family: 'STKaiti', '华文楷体', serif; font-size: 150px;
+      color: #2a2a1a; line-height: 1;
+    }
+
+    /* ========== teaching hint ========== */
+    .teaching-hint {
+      display: none;
+      position: fixed; bottom: 130px; left: 50%; transform: translateX(-50%);
+      z-index: 10; font-size: 18px; color: rgba(255,255,255,0.6);
+      font-weight: 500; letter-spacing: 2px; text-align: center;
+      pointer-events: none;
+    }
+    .teaching .teaching-hint, .drawing .teaching-hint { display: block; }
+
+    /* ========== teaching 麦克风 ========== */
+    .teaching-mic-area {
+      display: none;
+      position: fixed; right: 40px; bottom: 40px;
+      z-index: 10; align-items: center; justify-content: center;
+    }
+    .teaching .teaching-mic-area, .drawing .teaching-mic-area { display: flex; }
+    .drawing .teaching-mic-area { right: auto; left: 40px; }
+    .teaching-mic-btn {
+      width: 80px; height: 80px; border-radius: 50%;
+      background: rgba(255,255,255,0.7);
+      backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+      border: 1.5px solid rgba(255,255,255,0.9);
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08), inset 0 4px 8px rgba(255,255,255,1);
+      transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+      position: relative; touch-action: none; -webkit-user-select: none; user-select: none;
+    }
+    .teaching-mic-btn:active { transform: scale(0.92); }
+    .mic-unavailable .teaching-mic-btn {
+      background: rgba(200,200,205,0.5); border-color: rgba(180,180,185,0.6);
+      cursor: not-allowed; opacity: 0.5; pointer-events: none;
+    }
+    .teaching-listening .teaching-mic-btn {
+      background: rgba(74,144,226,0.25); border-color: rgba(74,144,226,0.5);
+    }
+    .wave-ring {
+      position: absolute; width: 100%; height: 100%; border-radius: 50%;
+      border: 2px solid rgba(74,144,226,0.3); top: 0; left: 0; opacity: 0; pointer-events: none;
+    }
+    .teaching-listening .wave-ring { animation: waveExpand 1.2s ease-out infinite; }
+    .teaching-listening .wave-ring:nth-child(2) { animation-delay: 0.4s; }
+    .teaching-listening .wave-ring:nth-child(3) { animation-delay: 0.8s; }
+    @keyframes waveExpand { 0% { transform: scale(1); opacity: 0.6; } 100% { transform: scale(2.2); opacity: 0; } }
+
+    /* ========== Debug 后门 ========== */
+    .debug-bar {
+      position: fixed; bottom: 10px; left: 50%; transform: translateX(-50%);
+      z-index: 999; display: none; gap: 6px; flex-wrap: wrap; justify-content: center;
+      max-width: 95vw; padding: 8px 12px;
+      background: rgba(255,255,255,0.9); backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+    .debug-bar.visible { display: flex; }
+    .debug-btn {
+      padding: 8px 14px; font-size: 14px; font-weight: 600;
+      border: 1px solid rgba(0,0,0,0.15); border-radius: 20px;
+      background: rgba(255,255,255,0.85);
+      color: #333; cursor: pointer; white-space: nowrap;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      transition: all 0.15s; touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none; -webkit-user-select: none;
+    }
+    .debug-btn:active { transform: scale(0.92); background: rgba(124,58,237,0.2); }
+  </style>
+</head>
+<body>
+  <div id="app" class="welcome">
+
+    <!-- 背景层 -->
+    <div class="bg-layer bg-welcome"></div>
+    <div class="bg-layer bg-teaching"></div>
+    <div class="bg-layer bg-drawing"></div>
+
+    <!-- 左侧面板（画板模式） -->
+    <div class="draw-left-panel"></div>
+
+    <!-- 画板工具 -->
+    <div class="draw-tools">
+      <span class="palette-title">水彩盘</span>
+      <div class="palette-colors">
+        <div class="color-swatch color-red" title="红色"></div>
+        <div class="color-swatch color-orange" title="橙色"></div>
+        <div class="color-swatch color-yellow" title="黄色"></div>
+        <div class="color-swatch color-green" title="绿色"></div>
+        <div class="color-swatch color-cyan" title="青色"></div>
+        <div class="color-swatch color-blue" title="蓝色"></div>
+        <div class="color-swatch color-purple" title="紫色"></div>
+        <div class="color-swatch color-black" title="黑色"></div>
+      </div>
+    </div>
+
+    <!-- 画布 -->
+    <div class="draw-canvas-area">
+      <canvas class="draw-canvas" id="drawCanvas"></canvas>
+      <div class="magic-overlay" id="magicOverlay">
+        <div class="magic-ring-group">
+          <div class="magic-ring"></div>
+          <div class="magic-ring"></div>
+          <div class="magic-ring"></div>
+          <div class="magic-ring"></div>
+          <div class="magic-dot"></div>
+        </div>
+        <div class="magic-scan"></div>
+        <div class="magic-text">GENERATING...</div>
+      </div>
+    </div>
+
+    <!-- 机器人 -->
+    <div class="robot-stage" id="robotStage">
+      <div class="robot-wrapper">
+        <div class="robot-head-container">
+          <div class="robot-antenna"></div>
+          <div class="antenna-signal"><div class="ring"></div><div class="ring"></div><div class="ring"></div></div>
+          <div class="confetti-burst" id="confettiBurst"></div>
+          <div class="robot-head">
+            <div class="robot-ears"><div class="robot-ear"></div><div class="robot-ear"></div></div>
+            <div class="robot-face">
+              <div class="face-led">
+                <div class="eyes"><div class="eye"></div><div class="eye"></div></div>
+                <div class="mouth"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="robot-neck"></div>
+        <div class="robot-body">
+          <div class="chest-screen">
+            <canvas id="hologramCanvas"></canvas>
+          </div>
+        </div>
+        <div class="robot-hands">
+          <div class="hand left"></div>
+          <div class="hand right"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 拼音格卡片 -->
+    <div class="card" id="card">
+      <pinyin-grid id="pinyinGrid" letter="z" base-path="svg_output" line-color="#2A3A5C" letter-color="#2a2a3a"></pinyin-grid>
+    </div>
+
+    <!-- 字卡（例字教学） -->
+    <div class="char-card" id="charCard">
+      <span class="char-card-pinyin" id="charCardPinyin"></span>
+      <span class="char-card-char" id="charCardChar"></span>
+    </div>
+
+    <!-- 欢迎页开始按钮 -->
+    <button class="start-btn" id="startBtn">开始学习</button>
+
+    <!-- teaching 状态 hint -->
+    <div class="teaching-hint" id="teachingHint"></div>
+
+    <!-- teaching 状态麦克风 -->
+    <div class="teaching-mic-area" id="teachingMicArea">
+      <div class="wave-ring"></div><div class="wave-ring"></div><div class="wave-ring"></div>
+      <button class="teaching-mic-btn" id="teachingMicBtn">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="#4a5568" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:2;">
+          <path d="M16 4a4 4 0 0 0-4 4v8a4 4 0 0 0 8 0V8a4 4 0 0 0-4-4Z"/>
+          <path d="M24 16a8 8 0 0 1-16 0"/>
+          <line x1="16" y1="24" x2="16" y2="28"/>
+          <line x1="12" y1="28" x2="20" y2="28"/>
+        </svg>
+      </button>
+    </div>
+
+
+    <!-- Debug 后门：按 ` 键切换显示，iPad 双击页面底部触发 -->
+    <div class="debug-bar" id="debugBar">
+      <button class="debug-btn" id="dbgPhase1" title="跳到拼音跟读">🔊 拼音</button>
+      <button class="debug-btn" id="dbgPhase2" title="跳到例字学习">📖 例字</button>
+      <button class="debug-btn" id="dbgPhase3" title="跳到画画环节">🎨 画画</button>
+      <button class="debug-btn" id="dbgPass" title="演示评测通过">✅ 通过</button>
+      <button class="debug-btn" id="dbgFail" title="演示评测失败">❌ 失败</button>
+      <button class="debug-btn" id="dbgFinish" title="跳过画画直接完成">🏁 完成</button>
+      <button class="debug-btn" id="dbgReset" title="重置到开始">🔄 重置</button>
+      <button class="debug-btn" id="dbgToggle" title="关闭调试栏">✕</button>
+    </div>
+    <!-- iPad 调试入口（右下角齿轮按钮，44px 最小触摸目标） -->
+    <button id="debugToggleBtn" style="position:fixed;bottom:56px;right:8px;width:44px;height:44px;border-radius:50%;background:rgba(0,0,0,0.1);border:1.5px solid rgba(0,0,0,0.12);z-index:998;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;color:rgba(0,0,0,0.35);-webkit-tap-highlight-color:transparent;touch-action:manipulation;user-select:none;-webkit-user-select:none;padding:0;line-height:1;">⚙</button>
+
+  </div>
+
+  <script src="pinyin-grid.js"></script>
+  <script>
+    let ttsActive = false;       // TTS 播放中，hologram 振幅加大
+
+    // 检测低性能设备，添加 CSS class 用于关闭耗性能的动画
+    const isLowPerf = /iPad|iPhone|Mobile|Android/i.test(navigator.userAgent) || window.devicePixelRatio <= 2;
+    if (isLowPerf) document.documentElement.classList.add('is-low-perf');
+
+    // 探测麦克风是否可用（iPad HTTPS 证书未信任时 getUserMedia 会报错）
+    (async function probeMic() {
+      try {
+        const s = await navigator.mediaDevices.getUserMedia({ audio: true });
+        s.getTracks().forEach(t => t.stop());
+      } catch(e) {
+        document.documentElement.classList.add('mic-unavailable');
+        console.warn('[probeMic] 麦克风不可用:', e.message);
+      }
+    })();
+
+    // ========== 全息波浪动画（iPad 低配优化版） ==========
+    const canvas = document.getElementById('hologramCanvas');
+    const ctx = canvas.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
+    // 降低 canvas 物理分辨率以节省 GPU 带宽
+    const cssW = 160, cssH = 95;
+    const scaleDown = (dpr > 2) ? 1.5 : dpr;   // 高分屏不跑满物理像素
+    canvas.width = cssW * scaleDown;
+    canvas.height = cssH * scaleDown;
+    ctx.scale(scaleDown, scaleDown);
+    let phase = 0, amp = 0.08, frameSkip = 0;
+    // 移动端 1 层波形，桌面 3 层
+    const waves = isLowPerf ? [
+      { type: 'line', speed: 0.05, freq: 0.04, alpha: 0.5, off: 0, lw: 1.0 },
+    ] : [
+      { type: 'surface', speed: 0.04, freq: 0.04, alpha: 0.12, off: 0 },
+      { type: 'line', speed: 0.06, freq: 0.05, alpha: 0.85, off: 1, lw: 1.5 },
+      { type: 'line', speed: 0.09, freq: 0.04, alpha: 0.45, off: 2, lw: 1.0 },
+    ];
+    function tick() {
+      // 移动端每 3 帧渲染一次(~20fps)，桌面每 2 帧(~30fps)
+      const skip = isLowPerf ? 3 : 2;
+      frameSkip = (frameSkip + 1) % skip;
+      if (frameSkip !== 0) { requestAnimationFrame(tick); return; }
+
+      ctx.clearRect(0, 0, cssW, cssH);
+      const ta = ttsActive ? 0.25 : (0.08 + Math.sin(phase * 0.02) * 0.03);
+      amp += (ta - amp) * 0.1; phase++;
+      const tc = { r: 0, g: 210, b: 211 }, cy = cssH / 2, mh = cssH * 0.4;
+      const step = isLowPerf ? 4 : 3;
+      waves.forEach(w => {
+        ctx.beginPath();
+        const pts = [];
+        for (let x = 0; x <= cssW; x += step) {
+          const dmp = Math.sin(x / cssW * Math.PI);
+          const y = Math.sin(x * w.freq + phase * w.speed + w.off) * Math.cos(x * w.freq * 0.4) * mh * amp * dmp;
+          pts.push({ x, y: cy + y });
+        }
+        const cs = `${tc.r},${tc.g},${tc.b}`;
+        if (w.type === 'surface') {
+          ctx.moveTo(0, cy);
+          pts.forEach((p, i) => { if (!i) return; const xc = (pts[i-1].x + p.x)/2, yc = (pts[i-1].y + p.y)/2; ctx.quadraticCurveTo(pts[i-1].x, pts[i-1].y, xc, yc); });
+          ctx.lineTo(cssW, cy);
+          ctx.fillStyle = `rgba(${cs},${w.alpha})`; ctx.fill();
+        } else if (w.type === 'line') {
+          ctx.moveTo(pts[0].x, pts[0].y);
+          pts.forEach((p, i) => { if (!i) return; const xc = (pts[i-1].x + p.x)/2, yc = (pts[i-1].y + p.y)/2; ctx.quadraticCurveTo(pts[i-1].x, pts[i-1].y, xc, yc); });
+          ctx.strokeStyle = `rgba(${cs},${w.alpha})`; ctx.lineWidth = w.lw;
+          // 移动端去掉 shadowBlur（canvas shadow 无 GPU 加速，性能杀手）
+          if (!isLowPerf) { ctx.shadowBlur = 4; ctx.shadowColor = `rgba(${cs},0.4)`; }
+          ctx.stroke();
+          ctx.shadowBlur = 0;
+        }
+      });
+      requestAnimationFrame(tick);
+    }
+    tick();
+    // 页面不可见时暂停动画（节省 GPU）
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) amp = 0;
+    });
+
+    // ========== 状态管理 ==========
+    const app = document.getElementById('app');
+    const card = document.getElementById('card');
+    const letters = ['b','p','m','f','d','t','n','l','g','k','h','j','q','x','zh','ch','sh','r','z','c','s','y','w','ɑ','o','e','i','u','ü'];
+    let currentIdx = 18;
+    const grid = document.getElementById('pinyinGrid');
+    let autoTimer = null;
+
+    function nextLetter() {
+      currentIdx = (currentIdx + 1) % letters.length;
+      grid.setAttribute('letter', letters[currentIdx]);
+    }
+
+    // ========== 教学流程状态 ==========
+    const API = window.location.origin;
+    const teachingMicBtn = document.getElementById('teachingMicBtn');
+    const teachingMicArea = document.getElementById('teachingMicArea');
+    const teachingHint = document.getElementById('teachingHint');
+    const charCard = document.getElementById('charCard');
+    const charCardPinyin = document.getElementById('charCardPinyin');
+    const charCardChar = document.getElementById('charCardChar');
+    let lessonData = null;       // /api/lesson 返回的数据
+    let teachPhase = 'idle';     // idle | tts_playing | waiting_mic | evaluating | example | drawing_talk
+    let exampleIdx = 0;          // 当前例字索引
+    let currentPinyin = 'z';     // 当前教学拼音
+
+    // ========== 机器人状态管理 ==========
+    const robotStage = document.getElementById('robotStage');
+
+    function setRobotState(state) {
+      robotStage.classList.remove('state-ready', 'state-listening', 'result-pass', 'result-fail');
+      if (state) robotStage.classList.add('state-' + state);
+    }
+
+    function setRobotMood(mood) {
+      robotStage.classList.remove('mood-happy', 'mood-sad');
+      if (mood) robotStage.classList.add('mood-' + mood);
+    }
+
+    // ── 录音状态（复用 assessment.html 的录音逻辑）──
+    const Rec = { stream: null, proc: null, src: null, gainNode: null,
+                   pcmBufs: [], recording: false, resampleRatio: 1, resampleAcc: 0 };
+
+    function startRec() {
+      return new Promise((resolve, reject) => {
+        navigator.mediaDevices.getUserMedia({ audio: { channelCount: 1, echoCancellation: true } })
+          .then(stream => {
+            Rec.stream = stream; Rec.recording = true; Rec.pcmBufs = [];
+            // 复用 ttsAudioCtx（在 handleStart 中同步创建），避免 iOS 异步创建 AudioContext 失败
+            const ctx = ttsAudioCtx || new (window.AudioContext || window.webkitAudioContext)();
+            Rec.resampleRatio = ctx.sampleRate / 16000;
+            Rec.resampleAcc = 0;
+            // 清理上一次录音残留的节点
+            if (Rec.proc) { try { Rec.proc.disconnect(); } catch(e){} Rec.proc = null; }
+            if (Rec.src)  { try { Rec.src.disconnect(); } catch(e){} Rec.src = null; }
+            if (Rec.gainNode) { try { Rec.gainNode.disconnect(); } catch(e){} Rec.gainNode = null; }
+            Rec.src = ctx.createMediaStreamSource(stream);
+            Rec.proc = ctx.createScriptProcessor(4096, 1, 1);
+            Rec.proc.onaudioprocess = e => {
+              if (!Rec.recording) return;
+              const input = e.inputBuffer.getChannelData(0);
+              const ratio = Rec.resampleRatio;
+              const outLen = Math.floor((input.length + Rec.resampleAcc) / ratio);
+              const buf = new Int16Array(outLen);
+              let acc = Rec.resampleAcc;
+              for (let i = 0; i < outLen; i++) {
+                const fi = Math.floor(acc), frac = acc - fi;
+                const idx0 = Math.max(0, Math.min(fi, input.length - 1));
+                const idx1 = Math.max(0, Math.min(fi + 1, input.length - 1));
+                const v = Math.max(-1, Math.min(1, input[idx0] + (input[idx1] - input[idx0]) * frac));
+                buf[i] = v < 0 ? v * 0x8000 : v * 0x7FFF;
+                acc += ratio;
+              }
+              Rec.resampleAcc = Math.max(0, acc - input.length);
+              Rec.pcmBufs.push(buf);
+            };
+            // 极小增益防止扬声器反馈，也避免 iOS 优化掉音频链路
+            Rec.gainNode = ctx.createGain();
+            Rec.gainNode.gain.value = 0.01;
+            Rec.src.connect(Rec.proc);
+            Rec.proc.connect(Rec.gainNode);
+            Rec.gainNode.connect(ctx.destination);
+            resolve();
+          }).catch(err => {
+            console.error('[startRec] getUserMedia error:', err.name, err.message);
+            Rec.micDenied = true;
+            reject(err);
+          });
+      });
+    }
+
+    function stopRec() {
+      return new Promise(resolve => {
+        Rec.recording = false;
+        // 延迟一帧让 ScriptProcessorNode 处理完缓冲区中剩余的音频
+        setTimeout(() => {
+          if (Rec.stream) Rec.stream.getTracks().forEach(t => t.stop());
+          if (Rec.proc) { try { Rec.proc.disconnect(); } catch(e){} Rec.proc = null; }
+          if (Rec.src)  { try { Rec.src.disconnect(); } catch(e){} Rec.src = null; }
+          if (Rec.gainNode) { try { Rec.gainNode.disconnect(); } catch(e){} Rec.gainNode = null; }
+          const total = Rec.pcmBufs.reduce((s, b) => s + b.length, 0);
+          if (total < 160) { resolve(null); return; }
+          const all = new Int16Array(total);
+          let off = 0;
+          for (const b of Rec.pcmBufs) { all.set(b, off); off += b.length; }
+          resolve(all);
+        }, 80);
+      });
+    }
+
+    function buildWav(pcm) {
+      const sr = 16000, ch = 1, bits = 16;
+      const buf = new ArrayBuffer(44 + pcm.length * 2);
+      const v = new DataView(buf);
+      const wStr = (off, s) => { for (let i=0;i<s.length;i++) v.setUint8(off+i, s.charCodeAt(i)); };
+      wStr(0,'RIFF'); v.setUint32(4, 36+pcm.length*2, true); wStr(8,'WAVE');
+      wStr(12,'fmt '); v.setUint32(16,16,true); v.setUint16(20,1,true); v.setUint16(22,ch,true);
+      v.setUint32(24,sr,true); v.setUint32(28,sr*ch*bits/8,true);
+      v.setUint16(32,ch*bits/8,true); v.setUint16(34,bits,true);
+      wStr(36,'data'); v.setUint32(40,pcm.length*2,true);
+      new Int16Array(buf,44).set(pcm);
+      return new Uint8Array(buf);
+    }
+
+    function pcmToB64(pcm) {
+      const wav = buildWav(pcm);
+      let bin = ''; for (let i=0;i<wav.length;i+=8192) bin += String.fromCharCode(...wav.subarray(i,Math.min(i+8192,wav.length)));
+      return btoa(bin);
+    }
+
+    // ── TTS 播放 ──
+    let ttsAudioCtx = null;
+
+    async function playPcmB64(pcmB64, sampleRate = 24000) {
+      const pcmBytes = Uint8Array.from(atob(pcmB64), c => c.charCodeAt(0));
+      const pcm16 = new Int16Array(pcmBytes.buffer);
+      if (!ttsAudioCtx) ttsAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const audioCtx = ttsAudioCtx;
+      if (audioCtx.state === 'suspended') await audioCtx.resume();
+      const abuf = audioCtx.createBuffer(1, pcm16.length, sampleRate);
+      const ch = abuf.getChannelData(0);
+      for (let i=0;i<pcm16.length;i++) ch[i] = pcm16[i] / 32768;
+      return new Promise(resolve => {
+        const src = audioCtx.createBufferSource();
+        src.buffer = abuf;
+        src.playbackRate.value = 0.9;
+        src.connect(audioCtx.destination);
+        src.onended = resolve; src.start();
+      });
+    }
+
+    async function playTts(text) {
+      if (!text) { console.warn('[playTts] empty text'); return; }
+      try {
+        const resp = await fetch(`${API}/api/tts`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({text}) });
+        if (!resp.ok) { console.error('[playTts] HTTP', resp.status, await resp.text()); return; }
+        const data = await resp.json();
+        if (!data.audio) { console.error('[playTts] no audio in response', data); return; }
+        ttsActive = true;
+        await playPcmB64(data.audio, data.sample_rate || 24000);
+        ttsActive = false;
+      } catch (err) {
+        console.error('[playTts] fetch error:', err.message || err);
+        setHint('播放失败，请检查网络');
+      }
+    }
+
+    // ── SSE 流式 LLM+TTS：文字逐字显示，音频逐句播放 ──
+    async function streamSpeak(prompt, onText) {
+      const resp = await fetch(`${API}/api/stream_speak`, {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({prompt})
+      });
+      const reader = resp.body.getReader();
+      const decoder = new TextDecoder();
+      let buf = '', fullText = '';
+      while (true) {
+        const {done, value} = await reader.read();
+        if (done) break;
+        buf += decoder.decode(value, {stream: true});
+        const lines = buf.split('\n');
+        buf = lines.pop() || '';
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue;
+          try {
+            const data = JSON.parse(line.slice(6));
+            if (data.type === 'text') {
+              fullText += data.text;
+              if (onText) onText(fullText);
+            } else if (data.type === 'audio') {
+              ttsActive = true;
+              await playPcmB64(data.audio, data.sample_rate || 24000);
+              ttsActive = false;
+            }
+          } catch(e) {}
+        }
+      }
+      return fullText;
+    }
+
+    // ── 讯飞评测 ──
+    async function evalPinyin(refChar, refPinyin, pcm) {
+      // 直接发送原始 PCM（不封装 WAV），iFlytek raw 模式接受纯 PCM16
+      const rawB64 = pcmToB64raw(pcm);
+      const resp = await fetch(`${API}/api/eval_pinyin`, {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ ref_char: refChar, ref_pinyin: refPinyin, audio: rawB64, encoding:'raw', slack:0.3 })
+      });
+      return resp.json();
+    }
+
+    // PCM Int16Array → raw base64（无 WAV 头）
+    function pcmToB64raw(pcm) {
+      let bin = '';
+      const buf = new Uint8Array(pcm.buffer);
+      for (let i = 0; i < buf.length; i += 8192)
+        bin += String.fromCharCode(...buf.subarray(i, Math.min(i + 8192, buf.length)));
+      return btoa(bin);
+    }
+
+    // ── GLM 反馈 ──
+    async function glmFeedback(passed, target, score) {
+      const resp = await fetch(`${API}/api/glm_feedback`, {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ passed, target, score })
+      });
+      return (await resp.json()).text;
+    }
+
+    function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+    // ── 设置 hint ──
+    function setHint(text) { teachingHint.textContent = text; }
+
+    // ── 显示/隐藏字卡 ──
+    function showCharCard(pinyin, char) {
+      charCardPinyin.textContent = pinyin;
+      charCardChar.textContent = char;
+      charCard.classList.add('visible');
+      document.getElementById('card').style.display = 'none';
+    }
+    function hideCharCard() {
+      charCard.classList.remove('visible');
+      document.getElementById('card').style.display = '';
+    }
+
+    // ── 预录 MP3 教学语音（替代实时 TTS，更快） ──
+    async function playLessonAudio(letter) {
+      const url = `/voice_of_pinyin/${letter}.mp3`;
+      setHint('听老师说...');
+      // 检查预录 MP3 是否存在
+      try {
+        const headResp = await fetch(url, { method: 'HEAD' });
+        if (!headResp.ok) throw new Error('not found');
+      } catch {
+        // 没有预录文件，回退到实时 TTS
+        await playTts(lessonData.teaching_script);
+        return;
+      }
+      // 播放预录 MP3
+      try {
+        await new Promise((resolve, reject) => {
+          const audio = new Audio(url);
+          audio.playbackRate = 0.9;
+          audio.onended = resolve;
+          audio.onerror = reject;
+          // iOS: play() 如果被拦截，走 AudioContext 回退
+          audio.play().catch(() => {
+            // 通过 AudioContext 解码播放 MP3（需要 fetch → decodeAudioData）
+            fetch(url)
+              .then(r => r.arrayBuffer())
+              .then(buf => ttsAudioCtx.decodeAudioData(buf))
+              .then(abuf => {
+                const src = ttsAudioCtx.createBufferSource();
+                src.playbackRate.value = 0.9;
+                src.buffer = abuf; src.connect(ttsAudioCtx.destination);
+                src.onended = resolve; src.start();
+              })
+              .catch(reject);
+          });
+        });
+      } catch (e) {
+        console.warn('[playLessonAudio] MP3 playback failed, fallback to TTS:', e);
+        await playTts(lessonData.teaching_script);
+      }
+    }
+
+    // ── 主教学流程 ──
+    async function startLesson(letter) {
+      currentPinyin = letter;
+      grid.setAttribute('letter', letter);
+      teachPhase = 'tts_playing';
+      setHint('');
+      setRobotState('ready');
+      setRobotMood('happy');
+
+      // 1. 加载课程数据
+      lessonData = await fetch(`${API}/api/lesson?letter=${encodeURIComponent(letter)}`).then(r=>r.json());
+
+      // 预取例字 character 数据
+      lessonData.exampleChars = await Promise.all(
+        (lessonData.example_words || []).map(ex =>
+          fetch(`${API}/api/character/${ex.character_content_id}`).then(r => r.json())
+        )
+      );
+
+      // 2. 等待卡片入场动画完成后再播放语音
+      await sleep(950);
+      // 3. 播放教学语音（优先预录 MP3，没有则实时 TTS）
+      await playLessonAudio(letter);
+
+      // 3. 进入等待孩子读拼音（MP3 已包含引导提示，不重复提示）
+      await waitForPinyinRead(lessonData.ref_char, lessonData.ref_pinyin, letter);
+    }
+
+    async function waitForPinyinRead(refChar, refPinyin, target) {
+      teachPhase = 'waiting_mic';
+      setRobotState('ready');
+      teachingMicArea.style.display = '';
+    }
+
+    // 麦克风按下
+    async function onMicDown(e) {
+      e.preventDefault();
+      // iOS: 必须在用户手势中 resume AudioContext，否则 ScriptProcessor 不触发 onaudioprocess
+      if (ttsAudioCtx && ttsAudioCtx.state === 'suspended') await ttsAudioCtx.resume();
+      // 画画阶段
+      if (app.classList.contains('drawing')) {
+        if (drawPhase !== 'idle') return;
+        drawPhase = 'recording';
+        app.classList.add('teaching-listening');
+        setRobotState('listening');
+        setHint('大声说出来...');
+        try { await startRec(); } catch (err) {
+          console.error('[onMicDown] drawing mic error:', err);
+          drawPhase = 'idle';
+          app.classList.remove('teaching-listening');
+          setRobotState(null);
+          setHint('麦克风无法访问，请检查权限');
+        }
+        return;
+      }
+      // 教学阶段
+      if (teachPhase !== 'waiting_mic') return;
+      teachPhase = 'recording';
+      app.classList.add('teaching-listening');
+      setRobotState('listening');
+      setHint('大声读出来...');
+      try { await startRec(); } catch (err) {
+        console.error('[onMicDown] teaching mic error:', err);
+        teachPhase = 'waiting_mic';
+        app.classList.remove('teaching-listening');
+        setRobotState('ready');
+        setHint('麦克风无法访问，请在设置中允许麦克风权限');
+      }
+    }
+
+    // 麦克风松开
+    async function onMicUp(e) {
+      e.preventDefault();
+      // 画画阶段
+      if (app.classList.contains('drawing')) {
+        if (drawPhase !== 'recording') return;
+        drawPhase = 'thinking';
+        app.classList.remove('teaching-listening');
+        setRobotState(null);
+        setHint('思考中...');
+        const pcm = await stopRec();
+        if (!pcm) {
+          drawPhase = 'idle';
+          setHint('没听到声音，请按住麦克风说话');
+          return;
+        }
+        try {
+          await handleDrawVoice(pcm);
+        } catch (err) {
+          console.error('[onMicUp] draw voice error:', err);
+          setHint('出错了，再试一次吧');
+        }
+        drawPhase = 'idle';
+        return;
+      }
+      // 教学阶段
+      if (teachPhase !== 'recording') return;
+      teachPhase = 'evaluating';
+      app.classList.remove('teaching-listening');
+      setHint('评测中...');
+      const pcm = await stopRec();
+      if (!pcm) { teachPhase = 'waiting_mic'; setRobotState('ready'); setHint('没听到，再试一次'); return; }
+
+      // 判断当前是拼音阶段还是例字阶段
+      if (charCard.classList.contains('visible')) {
+        // 例字评测
+        const ex = lessonData.example_words[exampleIdx];
+        const charInfo = await fetch(`${API}/api/character/${ex.character_content_id}`).then(r=>r.json());
+        const result = await evalPinyin(charInfo.char, charInfo.eval_pinyin, pcm);
+        const fbPrompt = result.passed
+          ? `孩子刚刚读了"${charInfo.char}"，读得非常棒！请用一句话夸奖孩子，语气活泼可爱，适合5岁小朋友，不超过20字。不要用emoji。`
+          : `孩子刚刚读了"${charInfo.char}"，还需要再练习一下。请用一句话鼓励孩子再试一次，语气温柔，适合5岁小朋友，不超过20字。不要用emoji。`;
+        setHint(result.passed ? '太棒了！' : '再试一次吧');
+        if (result.passed) {
+          setRobotState('pass');
+          setRobotMood('happy');
+          await streamSpeak(fbPrompt, () => {});
+          await sleep(2800);
+          setRobotState('ready');
+          exampleIdx++;
+          if (exampleIdx < lessonData.example_words.length) {
+            await startExampleWord(exampleIdx);
+          } else {
+            await enterDrawing();
+          }
+        } else {
+          setRobotState('fail');
+          setRobotMood('sad');
+          await streamSpeak(fbPrompt, () => {});
+          await sleep(2200);
+          setRobotState('ready');
+          setRobotMood('happy');
+          teachPhase = 'waiting_mic';
+          setHint('再试一次吧');
+        }
+      } else {
+        // 拼音评测
+        const result = await evalPinyin(lessonData.ref_char, lessonData.ref_pinyin, pcm);
+        if (result.passed) {
+          setRobotState('pass');
+          setRobotMood('happy');
+          const wordsDesc = lessonData.exampleChars.map(c => `${c.char}（${c.pinyin}）`).join('、');
+          const mergedPrompt = `孩子刚刚读了"${lessonData.ref_char}"，读得非常棒！先夸孩子一句，然后告诉孩子：用"${lessonData.ref_char}"拼读的字有${wordsDesc}，我们一起来学吧。语气活泼可爱，适合5岁小朋友，不超过50字。不要用emoji表情符号。`;
+          await streamSpeak(mergedPrompt, () => {});
+          await sleep(2800);
+          setRobotState('ready');
+          exampleIdx = 0;
+          await startExampleWord(0);
+        } else {
+          setRobotState('fail');
+          setRobotMood('sad');
+          const fbPrompt = `孩子刚刚读了"${lessonData.ref_char}"，还需要再练习一下。请用一句话鼓励孩子再试一次，语气温柔，适合5岁小朋友，不超过20字。不要用emoji。`;
+          await streamSpeak(fbPrompt, () => {});
+          await sleep(2200);
+          setRobotState('ready');
+          setRobotMood('happy');
+          teachPhase = 'waiting_mic';
+          setHint('再试一次吧');
+        }
+      }
+    }
+
+    async function startExampleWord(idx) {
+      const ex = lessonData.example_words[idx];
+      const charInfo = await fetch(`${API}/api/character/${ex.character_content_id}`).then(r=>r.json());
+      showCharCard(charInfo.pinyin, charInfo.char);
+      teachPhase = 'tts_playing';
+      setRobotState('ready');
+      setHint('听老师说...');
+
+      // 播放 pronunciation_prompt
+      if (charInfo.pronunciation_prompt) {
+        if (charInfo.prompt_type === 'voice') {
+          // 直接播放音频 URL
+          await new Promise(resolve => {
+            const audio = new Audio(charInfo.pronunciation_prompt);
+            audio.onended = resolve; audio.onerror = resolve; audio.play();
+          });
+        } else {
+          await playTts(charInfo.pronunciation_prompt);
+        }
+      } else {
+        await playTts(`这个字是${charInfo.char}，读作${charInfo.pinyin}，你来试试看。`);
+      }
+      teachPhase = 'waiting_mic';
+      setHint('按住麦克风读出这个字');
+    }
+
+    async function enterDrawing() {
+      // 流式生成过渡语 + TTS
+      const drawPrompt = `孩子刚刚学完了拼音"${lessonData.ref_char}"的发音和例字，现在要进入画画环节！请用一句话告诉孩子，语气活泼，适合5岁小朋友，不超过25字。不要用emoji。`;
+      await streamSpeak(drawPrompt, () => {});
+
+      // 切换到 drawing 状态
+      setRobotState(null); setRobotMood(null);
+      hideCharCard();
+      if (autoTimer) { clearInterval(autoTimer); autoTimer = null; }
+      app.classList.remove('welcome', 'teaching');
+      app.classList.add('drawing');
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#E6EEF5');
+      setTimeout(resizeCanvas, 400);
+
+      // 播放 painting_guidance
+      if (lessonData.painting_guidance) {
+        setTimeout(async () => {
+          await playTts(lessonData.painting_guidance);
+        }, 600);
+      }
+    }
+
+    // 麦克风事件绑定
+    teachingMicBtn.addEventListener('mousedown', onMicDown);
+    teachingMicBtn.addEventListener('touchstart', onMicDown, { passive: false });
+            document.addEventListener('mouseup', onMicUp);
+    document.addEventListener('touchend', onMicUp);
+
+    // 欢迎 → 教学（点击/触摸开始）
+    function handleStart() {
+      if (!app.classList.contains('welcome')) return;
+      // iOS Safari: 必须在用户手势同步上下文中创建并 resume AudioContext
+      if (!ttsAudioCtx) ttsAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (ttsAudioCtx.state === 'suspended') ttsAudioCtx.resume();
+      // iOS 自动暂停保护：循环播放无声 buffer 保持 AudioContext 一直 running
+      try {
+        const silentBuf = ttsAudioCtx.createBuffer(1, 1, ttsAudioCtx.sampleRate);
+        const silentSrc = ttsAudioCtx.createBufferSource();
+        silentSrc.buffer = silentBuf;
+        silentSrc.loop = true;
+        silentSrc.connect(ttsAudioCtx.destination);
+        silentSrc.start();
+      } catch(e) { /* keepalive 非关键，忽略 */ }
+      app.classList.replace('welcome', 'teaching');
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#E8D4F0');
+      startLesson('z');
+    }
+    const startBtn = document.getElementById('startBtn');
+    startBtn.addEventListener('click', handleStart);
+    startBtn.addEventListener('touchend', (e) => { e.preventDefault(); handleStart(); });
+
+
+    // ========== 画板绘制功能 ==========
+    const drawCanvas = document.getElementById('drawCanvas');
+    const dCtx = drawCanvas.getContext('2d');
+    let drawColor = '#f44336';
+    let drawing = false;
+    let lastX = 0, lastY = 0, midX = 0, midY = 0;
+    let canvasLeft = 0, canvasTop = 0;
+    let syncPending = false;
+
+    // 用离屏 1x 画布做高效绘制，再合成到显示画布
+    let offCanvas = document.createElement('canvas');
+    let offCtx = offCanvas.getContext('2d');
+
+    function resizeCanvas() {
+      const rect = drawCanvas.parentElement.getBoundingClientRect();
+      canvasLeft = rect.left; canvasTop = rect.top;
+      const cw = rect.width, ch = rect.height;
+      // 保存当前离屏画布内容（canvas resize 会清空内容）
+      const saved = document.createElement('canvas');
+      saved.width = offCanvas.width || cw;
+      saved.height = offCanvas.height || ch;
+      saved.getContext('2d').drawImage(offCanvas, 0, 0);
+      // 显示画布保持 CSS 尺寸 1:1（无 DPR 放大），笔触渲染极快
+      drawCanvas.width = cw;
+      drawCanvas.height = ch;
+      drawCanvas.style.width = cw + 'px';
+      drawCanvas.style.height = ch + 'px';
+      // 离屏画布同尺寸
+      offCanvas.width = cw;
+      offCanvas.height = ch;
+      offCtx.lineCap = 'round';
+      offCtx.lineJoin = 'round';
+      offCtx.lineWidth = 4;
+      offCtx.globalAlpha = 0.75;
+      // 恢复保存的内容
+      offCtx.drawImage(saved, 0, 0, cw, ch);
+      dCtx.clearRect(0, 0, cw, ch);
+      dCtx.drawImage(offCanvas, 0, 0);
+    }
+
+    function getPos(e) {
+      const t = e.touches ? e.touches[0] : e;
+      return { x: t.clientX - canvasLeft, y: t.clientY - canvasTop };
+    }
+
+    function startDraw(e) {
+      e.preventDefault();
+      drawing = true;
+      const p = getPos(e);
+      lastX = p.x; lastY = p.y;
+      midX = p.x; midY = p.y;
+      offCtx.globalCompositeOperation = 'source-over';
+      offCtx.strokeStyle = drawColor;
+    }
+
+    function moveDraw(e) {
+      e.preventDefault();
+      if (!drawing) return;
+      const p = getPos(e);
+      // 跳过与上一点距离 < 3px 的微移动，减少 120Hz iPad 上的无效路径操作
+      const dx = p.x - lastX, dy = p.y - lastY;
+      if (dx * dx + dy * dy < 9) return;
+      const newMidX = (lastX + p.x) / 2;
+      const newMidY = (lastY + p.y) / 2;
+      // 只画到离屏画布（1x 分辨率，极快）
+      offCtx.beginPath();
+      offCtx.moveTo(midX, midY);
+      offCtx.quadraticCurveTo(lastX, lastY, newMidX, newMidY);
+      offCtx.stroke();
+      midX = newMidX; midY = newMidY;
+      lastX = p.x; lastY = p.y;
+      // 用 rAF 批量同步到显示画布，避免每次 touchmove 都清屏重绘
+      if (!syncPending) {
+        syncPending = true;
+        requestAnimationFrame(() => {
+          syncPending = false;
+          dCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+          dCtx.drawImage(offCanvas, 0, 0);
+        });
+      }
+    }
+
+    function endDraw(e) {
+      e.preventDefault();
+      drawing = false;
+    }
+
+    function clearCanvas() {
+      dCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+      offCtx.clearRect(0, 0, offCanvas.width, offCanvas.height);
+    }
+
+    // 颜色选择
+    const allSwatches = document.querySelectorAll('.color-swatch');
+    const colorMap = {
+      'color-red': '#f44336', 'color-orange': '#ff9800', 'color-yellow': '#fbc02d',
+      'color-green': '#4caf50', 'color-cyan': '#00acc1', 'color-blue': '#3949ab',
+      'color-purple': '#8e24aa', 'color-black': '#212121'
+    };
+    function selectSwatch(el) {
+      allSwatches.forEach(s => s.classList.remove('selected'));
+      el.classList.add('selected');
+      const cls = [...el.classList].find(c => colorMap[c]);
+      if (cls) drawColor = colorMap[cls];
+    }
+    allSwatches.forEach(el => {
+      el.addEventListener('click', () => selectSwatch(el));
+      el.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        selectSwatch(el);
+      }, { passive: false });
+    });
+    // 默认选中红色
+    document.querySelector('.color-swatch.color-red').classList.add('selected');
+
+    drawCanvas.addEventListener('dblclick', clearCanvas);
+    drawCanvas.addEventListener('mousedown', startDraw);
+    drawCanvas.addEventListener('mousemove', moveDraw);
+    drawCanvas.addEventListener('mouseup', endDraw);
+    drawCanvas.addEventListener('mouseleave', endDraw);
+    drawCanvas.addEventListener('touchstart', startDraw, { passive: false });
+    drawCanvas.addEventListener('touchmove', moveDraw, { passive: false });
+    drawCanvas.addEventListener('touchend', endDraw, { passive: false });
+
+    const resizeObserver = new ResizeObserver(() => {
+      if (app.classList.contains('drawing')) resizeCanvas();
+    });
+    resizeObserver.observe(drawCanvas.parentElement);
+
+    // 在切换到 drawing 状态时初始化画板（由教学流程控制，card 点击不再直接跳转）
+    card.addEventListener('click', () => {
+      // 仅在 teaching 且 autoTimer 还在时（轮播模式）才允许点击跳转，正式教学流程由 enterDrawing() 控制
+    });
+
+    // ========== Drawing 状态：ASR 对话 + 图生图 ==========
+    let drawPhase = 'idle'; // idle | recording | thinking
+
+    async function handleDrawVoice(pcm) {
+      const pcmB64 = pcmToB64(pcm);
+      console.log('[draw] sending ASR request, PCM length:', pcm.length);
+      let asrResp;
+      try {
+        asrResp = await fetch(`${API}/api/asr`, {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ audio: pcmB64 })
+        });
+      } catch (err) {
+        console.error('[draw] ASR fetch failed:', err);
+        setHint('网络问题，请再试一次');
+        return;
+      }
+      const { text: userText } = await asrResp.json();
+      console.log('[draw] ASR result:', userText);
+      if (!userText) { setHint('没听清，请靠近麦克风再说一次'); return; }
+
+      // 所有画图阶段的语音都交给 GLM 判断意图，不硬编码流程
+      const glmResp = await fetch(`${API}/api/glm_drawing`, {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ user_text: userText, ref_char: lessonData.ref_char })
+      });
+      const { action, text, prompt } = await glmResp.json();
+      console.log('[draw] GLM action:', action, 'text:', text);
+
+      if (action === 'clear') {
+        clearCanvas();
+        await playTts(text);
+      } else if (action === 'undo') {
+        clearCanvas();
+        await playTts(text);
+      } else if (action === 'generate' && prompt) {
+        await playTts(text);
+        await generateImage(prompt);
+      } else {
+        await playTts(text || userText);
+      }
+    }
+
+    async function generateImage(prompt) {
+      // 确保离屏画布已同步
+      if (syncPending) {
+        syncPending = false;
+        dCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+        dCtx.drawImage(offCanvas, 0, 0);
+      }
+      const overlay = document.getElementById('magicOverlay');
+      overlay.classList.add('active');
+      playTts('魔法需要一点点时间，请耐心等待哦~~');
+
+      const MIN_SIDE = 1920;
+      const cw = drawCanvas.width, ch = drawCanvas.height;
+      const smaller = Math.min(cw, ch);
+      const ratio = smaller < MIN_SIDE ? MIN_SIDE / smaller : 1;
+      const sw = Math.round(cw * ratio), sh = Math.round(ch * ratio);
+
+      const scaleCanvas = document.createElement('canvas');
+      scaleCanvas.width = sw;
+      scaleCanvas.height = sh;
+      const sCtx = scaleCanvas.getContext('2d');
+      sCtx.drawImage(drawCanvas, 0, 0, sw, sh);
+      const imageB64 = scaleCanvas.toDataURL('image/png');
+
+      const resp = await fetch(`${API}/api/generate_image`, {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ prompt, image_base64: imageB64, size: `${sw}x${sh}` })
+      });
+      const { image_base64 } = await resp.json();
+
+      overlay.classList.remove('active');
+
+      const img = new Image();
+      img.onload = async () => {
+        dCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+        dCtx.drawImage(img, 0, 0, drawCanvas.width, drawCanvas.height);
+        // 同步到离屏画布，以便后续继续绘画
+        offCtx.clearRect(0, 0, offCanvas.width, offCanvas.height);
+        offCtx.drawImage(img, 0, 0, offCanvas.width, offCanvas.height);
+        const finishPrompt = `孩子今天学完了"${lessonData.ref_char}"的拼音和例字，也画了一幅画。请用两句话夸奖孩子，然后说今天的学习结束了，期待明天一起学习，再见。语气温柔活泼，适合5岁小朋友，不超过40字。不要用emoji。`;
+        await streamSpeak(finishPrompt, () => {});
+      };
+      img.src = image_base64;
+    }
+
+    // ========== Debug 后门 ==========
+    const debugBar = document.getElementById('debugBar');
+
+    // 按 ` 键切换
+    document.addEventListener('keydown', (e) => {
+      if (e.key === '`' && !e.ctrlKey && !e.metaKey) {
+        e.preventDefault();
+        debugBar.classList.toggle('visible');
+      }
+    });
+
+    // iPad: 右下角齿轮按钮
+    const debugToggleBtn = document.getElementById('debugToggleBtn');
+    let gearToggleTs = 0;
+    function toggleDebug(e) {
+      const now = Date.now();
+      if (now - gearToggleTs < 400) return; // 防 touchstart + click 双触发
+      gearToggleTs = now;
+      if (e.cancelable) { e.preventDefault(); e.stopPropagation(); }
+      debugBar.classList.toggle('visible');
+    }
+    debugToggleBtn.addEventListener('touchstart', toggleDebug, { passive: false });
+    debugToggleBtn.addEventListener('click', toggleDebug);
+
+    // iPad: 每个 debug 按钮绑定独立的 touchstart，直接调用对应逻辑
+    function bindDebugBtn(id, handler) {
+      const btn = document.getElementById(id);
+      btn.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        handler(e);
+      }, { passive: false });
+      // 桌面端保留 click
+      btn.addEventListener('click', handler);
+    }
+
+    // ── 工具函数：重置场景到 teaching 状态 ──
+    function resetToTeaching() {
+      if (autoTimer) { clearInterval(autoTimer); autoTimer = null; }
+      app.classList.remove('drawing', 'welcome');
+      app.classList.add('teaching');
+      teachingMicArea.style.display = '';
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#E8D4F0');
+      if (charCard) charCard.classList.remove('visible');
+      drawPhase = 'idle';
+    }
+
+    // ── 跳到拼音跟读 ──
+    bindDebugBtn('dbgPhase1', async () => {
+      if (!lessonData) {
+        lessonData = await fetch(`${API}/api/lesson?letter=${encodeURIComponent(currentPinyin)}`).then(r=>r.json());
+        lessonData.exampleChars = await Promise.all(
+          (lessonData.example_words || []).map(ex =>
+            fetch(`${API}/api/character/${ex.character_content_id}`).then(r => r.json())
+          )
+        );
+      }
+      hideCharCard();
+      resetToTeaching();
+      grid.setAttribute('letter', currentPinyin);
+      teachPhase = 'tts_playing';
+      setHint('听老师说...');
+      await playTts(lessonData.teaching_script);
+      teachPhase = 'waiting_mic';
+      setHint('按住麦克风读出这个拼音');
+      teachingMicArea.style.display = '';
+      debugBar.classList.remove('visible');
+    });
+
+    // ── 跳到例字学习 ──
+    bindDebugBtn('dbgPhase2', async () => {
+      if (!lessonData || !lessonData.example_words.length) {
+        lessonData = await fetch(`${API}/api/lesson?letter=${encodeURIComponent(currentPinyin)}`).then(r=>r.json());
+        lessonData.exampleChars = await Promise.all(
+          (lessonData.example_words || []).map(ex =>
+            fetch(`${API}/api/character/${ex.character_content_id}`).then(r => r.json())
+          )
+        );
+      }
+      hideCharCard();
+      resetToTeaching();
+      exampleIdx = 0;
+      await startExampleWord(0);
+      debugBar.classList.remove('visible');
+    });
+
+    // ── 跳到画画环节 ──
+    bindDebugBtn('dbgPhase3', async () => {
+      if (!lessonData) {
+        lessonData = await fetch(`${API}/api/lesson?letter=${encodeURIComponent(currentPinyin)}`).then(r=>r.json());
+      }
+      resetToTeaching();
+      await enterDrawing();
+      debugBar.classList.remove('visible');
+    });
+
+    // ── 演示评测通过效果 ──
+    bindDebugBtn('dbgPass', () => {
+      debugBar.classList.remove('visible');
+      setRobotState('pass');
+      setRobotMood('happy');
+      setHint('🌟 太棒了！');
+      streamSpeak('你读得真标准！声音洪亮又清楚，太厉害了！', () => {});
+      setTimeout(() => { setRobotState('ready'); setRobotMood('happy'); }, 2800);
+    });
+
+    // ── 演示评测失败效果 ──
+    bindDebugBtn('dbgFail', () => {
+      debugBar.classList.remove('visible');
+      setRobotState('fail');
+      setRobotMood('sad');
+      setHint('😅 再试一次');
+      streamSpeak('没关系，多试几次就会了，加油！', () => {});
+      setTimeout(() => { setRobotState('ready'); setRobotMood('happy'); }, 2800);
+    });
+
+    // ── 跳到完成环节 ──
+    bindDebugBtn('dbgFinish', async () => {
+      if (!lessonData) {
+        lessonData = await fetch(`${API}/api/lesson?letter=${encodeURIComponent(currentPinyin)}`).then(r=>r.json());
+      }
+      resetToTeaching();
+      const finishPrompt = `孩子今天学完了"${lessonData.ref_char}"的拼音和例字，也画了一幅画。请用两句话夸奖孩子，然后说今天的学习结束了，期待明天一起学习，再见。语气温柔活泼，适合5岁小朋友，不超过40字。不要用emoji。`;
+      await streamSpeak(finishPrompt, () => {});
+      setHint('今天的学习结束啦，明天见！');
+      debugBar.classList.remove('visible');
+    });
+
+    // ── 重置 ──
+    bindDebugBtn('dbgReset', () => {
+      lessonData = null;
+      exampleIdx = 0;
+      currentPinyin = 'z';
+      teachPhase = 'idle';
+      drawPhase = 'idle';
+      if (autoTimer) { clearInterval(autoTimer); autoTimer = null; }
+      app.className = 'welcome';
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#FFB3BA');
+      grid.setAttribute('letter', '');
+      teachingMicArea.style.display = '';
+      if (charCard) charCard.classList.remove('visible');
+      setHint('');
+      setRobotState('ready');
+      setRobotMood('happy');
+      document.querySelector('.start-btn').style.display = 'block';
+      debugBar.classList.remove('visible');
+    });
+
+    // ── 关闭调试栏 ──
+    bindDebugBtn('dbgToggle', () => {
+      debugBar.classList.remove('visible');
+    });
+
+  </script>
+</body>
+</html>
