@@ -1,0 +1,39 @@
+{
+  "id": "layout-masonry-grid",
+  "name": "Masonry Grid Layout",
+  "category": "layout",
+  "description": "A mixed-size card layout with varying heights using card-row and stacked-cards combinations. Combines story-card and principle-card for a visually dynamic but still structured grid.",
+  "themes": ["classic", "editorial", "signal"],
+  "structure": {
+    "html": "<section class=\"section\">\n  <div class=\"card-row rise\">\n    <article class=\"story-card\">\n      <p class=\"mini-label\">{{card_1_label}}</p>\n      <p class=\"card-title\">{{card_1_title}}</p>\n      <p>{{card_1_body}}</p>\n    </article>\n    <div class=\"stacked-cards\">\n      <article class=\"principle-card\">\n        <p class=\"mini-label\">{{card_2_label}}</p>\n        <p class=\"card-title\">{{card_2_title}}</p>\n      </article>\n      <article class=\"principle-card\">\n        <p class=\"mini-label\">{{card_3_label}}</p>\n        <p class=\"card-title\">{{card_3_title}}</p>\n      </article>\n    </div>\n    <article class=\"story-card rise-delay\">\n      <p class=\"mini-label\">{{card_4_label}}</p>\n      <p class=\"card-title\">{{card_4_title}}</p>\n      <p>{{card_4_body}}</p>\n    </article>\n  </div>\n</section>",
+    "variables": {
+      "card_1_label": { "type": "string", "default": "Highlight" },
+      "card_1_title": { "type": "string", "default": "Visual rhythm comes from size contrast, not decoration." },
+      "card_1_body": { "type": "string", "default": "Use tall story cards alongside shorter principle cards to create natural visual hierarchy." },
+      "card_2_label": { "type": "string", "default": "Metric A" },
+      "card_2_title": { "type": "string", "default": "Structured spacing" },
+      "card_3_label": { "type": "string", "default": "Metric B" },
+      "card_3_title": { "type": "string", "default": "Consistent tokens" },
+      "card_4_label": { "type": "string", "default": "Proof" },
+      "card_4_title": { "type": "string", "default": "Each card should earn its place on the page." },
+      "card_4_body": { "type": "string", "default": "Avoid filler cards. Every item in a masonry grid should carry real content weight." }
+    }
+  },
+  "variants": [
+    {
+      "name": "four-column",
+      "description": "Wider layout with four columns",
+      "html_diff": "Add a fourth column to the card-row with an additional story-card or stacked-cards block"
+    },
+    {
+      "name": "two-row",
+      "description": "Two rows of masonry cards for longer content",
+      "html_diff": "Add a second card-row section below the first"
+    }
+  ],
+  "usage": {
+    "best_for": ["case study grids", "blog listing pages", "portfolio layouts"],
+    "avoid_when": ["strict data tables", "forms", "settings pages"]
+  },
+  "quality_score": 8.3
+}

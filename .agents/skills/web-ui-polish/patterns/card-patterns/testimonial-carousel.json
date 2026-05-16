@@ -1,0 +1,36 @@
+{
+  "id": "card-testimonial",
+  "name": "Testimonial Cards",
+  "category": "card",
+  "description": "Two-column layout featuring a large pull quote on one side and author story-cards on the other. Uses hero-grid or similar two-column structure for balanced credibility presentation.",
+  "themes": ["classic", "editorial", "signal"],
+  "structure": {
+    "html": "<section class=\"section hero-grid\">\n  <div class=\"rise\">\n    <blockquote class=\"testimonial-quote\">\n      <p class=\"card-title\">{{quote}}</p>\n    </blockquote>\n  </div>\n  <div class=\"stacked-cards rise rise-delay\">\n    <article class=\"story-card\">\n      <p class=\"mini-label\">{{author_role}}</p>\n      <p class=\"card-title\">{{author_name}}</p>\n      <p>{{author_bio}}</p>\n    </article>\n    <article class=\"story-card\">\n      <p class=\"mini-label\">{{author_2_role}}</p>\n      <p class=\"card-title\">{{author_2_name}}</p>\n      <p>{{author_2_bio}}</p>\n    </article>\n  </div>\n</section>",
+    "variables": {
+      "quote": { "type": "string", "default": "The structure and restraint of this system made our landing page feel genuinely premium without any gimmicks." },
+      "author_role": { "type": "string", "default": "Lead Designer" },
+      "author_name": { "type": "string", "default": "Elena Vasquez" },
+      "author_bio": { "type": "string", "default": "Design lead at a SaaS company focused on developer tools and premium interfaces." },
+      "author_2_role": { "type": "string", "default": "Engineering Lead" },
+      "author_2_name": { "type": "string", "default": "Marcus Chen" },
+      "author_2_bio": { "type": "string", "default": "Built and shipped the company's design system across three product lines." }
+    }
+  },
+  "variants": [
+    {
+      "name": "single-author",
+      "description": "Only one author card alongside the quote",
+      "html_diff": "Remove the second story-card"
+    },
+    {
+      "name": "compact",
+      "description": "Horizontal layout with quote and author side by side in a single card",
+      "html_diff": "Wrap quote and author info in a single card-row with inline layout"
+    }
+  ],
+  "usage": {
+    "best_for": ["social proof sections", "landing pages", "product pages"],
+    "avoid_when": ["dashboards", "settings", "utility-focused pages"]
+  },
+  "quality_score": 8.5
+}

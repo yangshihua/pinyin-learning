@@ -9,8 +9,23 @@
   <meta name="theme-color" content="#FFB3BA">
   <title>拼音学习</title>
   <link rel="icon" type="image/svg+xml" href="/logo_full_color.svg">
-  <link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="preload" href="/fonts/KleeOne-Regular.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fonts/KleeOne-SemiBold.woff2" as="font" type="font/woff2" crossorigin>
   <style>
+    @font-face {
+      font-family: 'Klee One';
+      font-style: normal;
+      font-weight: 400;
+      src: url('/fonts/KleeOne-Regular.woff2') format('woff2'),
+           url('/fonts/KleeOne-Regular.ttf') format('truetype');
+    }
+    @font-face {
+      font-family: 'Klee One';
+      font-style: normal;
+      font-weight: 600;
+      src: url('/fonts/KleeOne-SemiBold.woff2') format('woff2'),
+           url('/fonts/KleeOne-SemiBold.ttf') format('truetype');
+    }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       width: 100vw; height: 100vh; overflow: hidden;
@@ -104,7 +119,7 @@
       pointer-events: none;
     }
     .drawing .draw-tools { opacity: 1; pointer-events: auto; }
-    .palette-title { font-size: 14px; color: #666; font-weight: 600; margin-bottom: 20px; letter-spacing: 1px; text-shadow: 0 1px 2px rgba(255,255,255,0.8); }
+    .palette-title { font-size: 14px; color: #666; font-weight: 600; margin-top: 20px; margin-bottom: 20px; letter-spacing: 1px; text-shadow: 0 1px 2px rgba(255,255,255,0.8); }
     .palette-colors { display: flex; flex-direction: column; align-items: center; width: 100%; overflow-y: auto; scrollbar-width: none; flex: 1; padding-top: 6px; }
     .palette-colors::-webkit-scrollbar { display: none; }
     .color-swatch {
@@ -300,6 +315,8 @@
       .robot-antenna::before { box-shadow: none !important; animation: none !important; }
       .eye { box-shadow: none !important; will-change: transform; }
       .mouth { box-shadow: none !important; }
+      .result-pass .eye { box-shadow: 0 0 18px #ffd700, 0 0 30px rgba(255,215,0,0.5) !important; }
+      .result-pass .mouth { box-shadow: 0 0 14px #ffd700 !important; }
       .state-listening .robot-head { box-shadow: 0 6px 12px rgba(0,0,0,0.08) !important; }
       /* 大幅减少 box-shadow 层数 */
       .chest-screen { box-shadow: inset 0 4px 10px rgba(0,0,0,0.9), 0 2px 0 rgba(255,255,255,0.6) !important; }
@@ -325,22 +342,29 @@
 
     /* ========== 机器人情绪状态 ========== */
 
-    /* 天线信号环 */
+    /* 天线信号环 — 圈圈从外至内收缩，天线顶点为圆心 */
     .antenna-signal {
-      position: absolute; top: -20px; left: 50%; transform: translateX(-50%);
-      pointer-events: none; display: none; z-index: 2;
+      position: absolute; top: -1px; left: 50%; transform: translateX(-50%);
+      width: 0; height: 0;
+      pointer-events: none; display: none; z-index: 5;
     }
     .state-listening .antenna-signal { display: block; }
     .antenna-signal .ring {
-      position: absolute; border: 2px solid #00d2d3; border-radius: 50%;
-      animation: signalExpand 1.2s ease-out infinite; opacity: 0;
+      position: absolute; left: 50%; top: 50%;
+      border-radius: 50%;
+      border: 3px solid #00d2d3;
+      animation: signalContract 1.3s ease-out infinite; opacity: 0;
     }
     .antenna-signal .ring:nth-child(1) { animation-delay: 0s; }
-    .antenna-signal .ring:nth-child(2) { animation-delay: 0.4s; }
-    .antenna-signal .ring:nth-child(3) { animation-delay: 0.8s; }
-    @keyframes signalExpand {
-      0% { width: 6px; height: 6px; opacity: 0.7; }
-      100% { width: 70px; height: 70px; opacity: 0; }
+    .antenna-signal .ring:nth-child(2) { animation-delay: 0.26s; }
+    .antenna-signal .ring:nth-child(3) { animation-delay: 0.52s; }
+    .antenna-signal .ring:nth-child(4) { animation-delay: 0.78s; }
+    .antenna-signal .ring:nth-child(5) { animation-delay: 1.04s; }
+    @keyframes signalContract {
+      0%   { width: 240px; height: 240px; margin: -120px 0 0 -120px; opacity: 0; border-width: 3px; }
+      15%  { opacity: 0.35; border-width: 3px; }
+      70%  { opacity: 0.12; border-width: 2px; }
+      100% { width: 20px; height: 20px; margin: -10px 0 0 -10px; opacity: 0; border-width: 1px; }
     }
 
     /* state-ready: 指向卡片 */
@@ -545,6 +569,25 @@
       .palette-title { font-size: 12px; }
     }
 
+    /* ========== 字母放大开场（在卡片内部） ========== */
+    .letter-zoom {
+      position: absolute; inset: 0; z-index: 2;
+      pointer-events: none;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .letter-zoom svg {
+      width: 100%; height: 100%; display: block;
+      transform: scale(2);
+      opacity: 0;
+      transition: transform 2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .letter-zoom.visible svg { opacity: 1; }
+    .letter-zoom.shrink svg {
+      transform: scale(1);
+    }
+    #pinyinGrid { opacity: 0; transition: opacity 1.8s ease; }
+    #pinyinGrid.visible { opacity: 1; }
+
     /* ========== 字卡（例字教学） ========== */
     .char-card {
       display: none;
@@ -561,13 +604,29 @@
     }
     .teaching .char-card.visible { display: flex; }
     .char-card-pinyin {
-      font-family: 'Klee One', 'Klee', 'Yuanti SC', cursive !important;
+      font-family: 'Klee One', 'Klee', 'Yuanti SC', 'PingFang SC', cursive !important;
       font-weight: 600; font-size: 56px;
       color: #4a6a5a; line-height: 1.1; letter-spacing: 4px;
     }
     .char-card-char {
-      font-family: 'STKaiti', '华文楷体', serif; font-size: 150px;
+      font-family: 'Kaiti SC', '华文楷体', '楷体', 'PingFang SC', serif; font-size: 150px;
       color: #2a2a1a; line-height: 1;
+    }
+
+    /* 卡片翻转动画 */
+    .card-flip-out {
+      transform: translate(-50%, -50%) rotateY(90deg) scale(0.7) !important;
+      opacity: 0 !important;
+      transition: transform 0.35s ease-in, opacity 0.35s ease-in !important;
+    }
+    .card-flip-prepare {
+      transform: translate(-50%, -50%) rotateY(-90deg) scale(0.7) !important;
+      opacity: 0 !important;
+    }
+    .card-flip-prepare.active {
+      transform: translate(-50%, -50%) rotateY(0) scale(1) !important;
+      opacity: 1 !important;
+      transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.35s ease-out !important;
     }
 
     /* ========== teaching hint ========== */
@@ -686,7 +745,7 @@
       <div class="robot-wrapper">
         <div class="robot-head-container">
           <div class="robot-antenna"></div>
-          <div class="antenna-signal"><div class="ring"></div><div class="ring"></div><div class="ring"></div></div>
+          <div class="antenna-signal"><div class="ring"></div><div class="ring"></div><div class="ring"></div><div class="ring"></div><div class="ring"></div></div>
           <div class="confetti-burst" id="confettiBurst"></div>
           <div class="robot-head">
             <div class="robot-ears"><div class="robot-ear"></div><div class="robot-ear"></div></div>
@@ -713,8 +772,12 @@
 
     <!-- 拼音格卡片 -->
     <div class="card" id="card">
+      <div class="letter-zoom" id="letterZoom">
+        <svg viewBox="0 0 600 600" preserveAspectRatio="xMidYMid meet"></svg>
+      </div>
       <pinyin-grid id="pinyinGrid" letter="z" base-path="svg_output" line-color="#2A3A5C" letter-color="#2a2a3a"></pinyin-grid>
     </div>
+
 
     <!-- 字卡（例字教学） -->
     <div class="char-card" id="charCard">
@@ -788,23 +851,34 @@
     canvas.height = cssH * scaleDown;
     ctx.scale(scaleDown, scaleDown);
     let phase = 0, amp = 0.08, frameSkip = 0;
-    // 移动端 1 层波形，桌面 3 层
+    let analyserData = null;  // 预分配 analyser 读取缓冲区
     const waves = isLowPerf ? [
-      { type: 'line', speed: 0.05, freq: 0.04, alpha: 0.5, off: 0, lw: 1.0 },
+      { type: 'surface', speed: 0.22, freq: 0.06, alpha: 0.25, off: 0 },
+      { type: 'line', speed: 0.28, freq: 0.06, alpha: 0.90, off: 0, lw: 2.5 },
     ] : [
-      { type: 'surface', speed: 0.04, freq: 0.04, alpha: 0.12, off: 0 },
-      { type: 'line', speed: 0.06, freq: 0.05, alpha: 0.85, off: 1, lw: 1.5 },
-      { type: 'line', speed: 0.09, freq: 0.04, alpha: 0.45, off: 2, lw: 1.0 },
+      { type: 'surface', speed: 0.18, freq: 0.06, alpha: 0.18, off: 0 },
+      { type: 'line', speed: 0.25, freq: 0.07, alpha: 0.90, off: 1, lw: 2.5 },
+      { type: 'line', speed: 0.35, freq: 0.06, alpha: 0.50, off: 2, lw: 1.5 },
     ];
     function tick() {
-      // 移动端每 3 帧渲染一次(~20fps)，桌面每 2 帧(~30fps)
-      const skip = isLowPerf ? 3 : 2;
+      const skip = isLowPerf ? 2 : 1;
       frameSkip = (frameSkip + 1) % skip;
       if (frameSkip !== 0) { requestAnimationFrame(tick); return; }
 
       ctx.clearRect(0, 0, cssW, cssH);
-      const ta = ttsActive ? 0.25 : (0.08 + Math.sin(phase * 0.02) * 0.03);
-      amp += (ta - amp) * 0.1; phase++;
+      let energy = 0;
+      if (ttsAnalyser) {
+        if (!analyserData) analyserData = new Uint8Array(ttsAnalyser.frequencyBinCount);
+        ttsAnalyser.getByteFrequencyData(analyserData);
+        for (let i = 0; i < analyserData.length; i++) energy += analyserData[i];
+        energy = energy / analyserData.length / 255;
+      }
+      const baseAmp = isLowPerf ? 0.12 : 0.04;
+      const ttsAmp = isLowPerf ? 0.75 : 0.65;
+      const ta = energy > 0.02
+        ? baseAmp + energy * (isLowPerf ? 1.2 : 1.0)
+        : ttsActive ? ttsAmp : (baseAmp + Math.sin(phase * 0.04) * 0.02);
+      amp += (ta - amp) * 0.5; phase++;
       const tc = { r: 0, g: 210, b: 211 }, cy = cssH / 2, mh = cssH * 0.4;
       const step = isLowPerf ? 4 : 3;
       waves.forEach(w => {
@@ -869,8 +943,10 @@
     const robotStage = document.getElementById('robotStage');
 
     function setRobotState(state) {
-      robotStage.classList.remove('state-ready', 'state-listening', 'result-pass', 'result-fail');
-      if (state) robotStage.classList.add('state-' + state);
+      robotStage.classList.remove('state-ready', 'state-listening', 'result-pass', 'result-fail', 'state-pass', 'state-fail');
+      if (state === 'pass') robotStage.classList.add('result-pass');
+      else if (state === 'fail') robotStage.classList.add('result-fail');
+      else if (state) robotStage.classList.add('state-' + state);
     }
 
     function setRobotMood(mood) {
@@ -971,11 +1047,18 @@
 
     // ── TTS 播放 ──
     let ttsAudioCtx = null;
+    let ttsAnalyser = null;      // 实时音频分析，驱动全息波浪律动
 
     async function playPcmB64(pcmB64, sampleRate = 24000) {
       const pcmBytes = Uint8Array.from(atob(pcmB64), c => c.charCodeAt(0));
       const pcm16 = new Int16Array(pcmBytes.buffer);
-      if (!ttsAudioCtx) ttsAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (!ttsAudioCtx) {
+        ttsAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        ttsAnalyser = ttsAudioCtx.createAnalyser();
+        ttsAnalyser.fftSize = 128;
+        ttsAnalyser.smoothingTimeConstant = 0.2;
+        ttsAnalyser.connect(ttsAudioCtx.destination);
+      }
       const audioCtx = ttsAudioCtx;
       if (audioCtx.state === 'suspended') await audioCtx.resume();
       const abuf = audioCtx.createBuffer(1, pcm16.length, sampleRate);
@@ -985,7 +1068,7 @@
         const src = audioCtx.createBufferSource();
         src.buffer = abuf;
         src.playbackRate.value = 0.9;
-        src.connect(audioCtx.destination);
+        src.connect(ttsAnalyser || audioCtx.destination);
         src.onended = resolve; src.start();
       });
     }
@@ -1085,6 +1168,74 @@
       document.getElementById('card').style.display = '';
     }
 
+    // ── 播放预录 MP3（过渡音） ──
+    async function playMp3(url) {
+      const headResp = await fetch(url, { method: 'HEAD' });
+      if (!headResp.ok) throw new Error('not found');
+      ttsActive = true;
+      await new Promise((resolve, reject) => {
+        const audio = new Audio(url);
+        audio.onended = resolve;
+        audio.onerror = reject;
+        audio.play().catch(() => {
+          fetch(url)
+            .then(r => r.arrayBuffer())
+            .then(buf => ttsAudioCtx.decodeAudioData(buf))
+            .then(abuf => {
+              const src = ttsAudioCtx.createBufferSource();
+              src.buffer = abuf; src.connect(ttsAnalyser || ttsAudioCtx.destination);
+              src.onended = resolve; src.start();
+            })
+            .catch(reject);
+        });
+      });
+      ttsActive = false;
+    }
+
+    // ── 翻转卡片 ──
+    async function showCharCardWithFlip(pinyin, char) {
+      const card = document.getElementById('card');
+      card.classList.add('card-flip-out');
+      await sleep(350);
+      card.style.display = 'none';
+      card.classList.remove('card-flip-out');
+      charCardPinyin.textContent = pinyin;
+      charCardChar.textContent = char;
+      charCard.style.display = 'flex';
+      charCard.classList.add('visible');
+      charCard.classList.add('card-flip-prepare');
+      void charCard.offsetHeight;
+      charCard.classList.add('active');
+      await sleep(350);
+      charCard.classList.remove('card-flip-prepare', 'active');
+    }
+    async function hideCharCardWithFlip() {
+      charCard.classList.add('card-flip-out');
+      await sleep(350);
+      charCard.style.display = 'none';
+      charCard.classList.remove('visible');
+      charCard.classList.remove('card-flip-out');
+      const card = document.getElementById('card');
+      card.style.display = '';
+      card.classList.add('card-flip-prepare');
+      void card.offsetHeight;
+      card.classList.add('active');
+      await sleep(350);
+      card.classList.remove('card-flip-prepare', 'active');
+    }
+    async function updateCharCardWithFlip(newPinyin, newChar) {
+      charCard.classList.add('card-flip-out');
+      await sleep(250);
+      charCardPinyin.textContent = newPinyin;
+      charCardChar.textContent = newChar;
+      charCard.classList.remove('card-flip-out');
+      charCard.classList.add('card-flip-prepare');
+      void charCard.offsetHeight;
+      charCard.classList.add('active');
+      await sleep(250);
+      charCard.classList.remove('card-flip-prepare', 'active');
+    }
+
     // ── 预录 MP3 教学语音（替代实时 TTS，更快） ──
     async function playLessonAudio(letter) {
       const url = `/voice_of_pinyin/${letter}.mp3`;
@@ -1099,10 +1250,10 @@
         return;
       }
       // 播放预录 MP3
+      ttsActive = true;
       try {
         await new Promise((resolve, reject) => {
           const audio = new Audio(url);
-          audio.playbackRate = 0.9;
           audio.onended = resolve;
           audio.onerror = reject;
           // iOS: play() 如果被拦截，走 AudioContext 回退
@@ -1113,8 +1264,7 @@
               .then(buf => ttsAudioCtx.decodeAudioData(buf))
               .then(abuf => {
                 const src = ttsAudioCtx.createBufferSource();
-                src.playbackRate.value = 0.9;
-                src.buffer = abuf; src.connect(ttsAudioCtx.destination);
+                src.buffer = abuf; src.connect(ttsAnalyser || ttsAudioCtx.destination);
                 src.onended = resolve; src.start();
               })
               .catch(reject);
@@ -1124,6 +1274,56 @@
         console.warn('[playLessonAudio] MP3 playback failed, fallback to TTS:', e);
         await playTts(lessonData.teaching_script);
       }
+      ttsActive = false;
+    }
+
+    // ── 字母放大开场动画 ──
+    // ── 字母放大开场（在卡片内部，与 MP3 同时播放）──
+    async function showLetterZoom(letter) {
+      const zoom = document.getElementById('letterZoom');
+      const svgEl = zoom.querySelector('svg');
+      try {
+        const resp = await fetch(`svg_output/${letter}.svg`);
+        if (!resp.ok) throw new Error('not found');
+        const svgText = await resp.text();
+        const doc = new DOMParser().parseFromString(svgText, 'image/svg+xml');
+        const srcSvg = doc.querySelector('svg');
+        if (!srcSvg) throw new Error('no svg');
+        const paths = [...srcSvg.querySelectorAll('path')].map(p => ({
+          d: p.getAttribute('d'),
+          fillRule: p.getAttribute('fill-rule') || 'nonzero'
+        }));
+        const cfg = (typeof LETTER_CONFIG !== 'undefined' ? LETTER_CONFIG : {})[letter];
+        if (!cfg) throw new Error('no config');
+        // 与 grid letter-color (#2a2a3a) 保持一致，切换时无色差
+        svgEl.innerHTML = `<g transform="translate(${cfg.tx.toFixed(2)},${cfg.ty.toFixed(2)}) scale(${cfg.scale.toFixed(6)})">
+          ${paths.map(p => `<path d="${p.d}" fill="#2a2a3a" fill-rule="${p.fillRule}"/>`).join('')}
+        </g>`;
+      } catch(e) {
+        zoom.style.display = 'none';
+        grid.classList.add('visible');
+        console.warn('[zoom]', e.message);
+        return;
+      }
+      zoom.classList.remove('shrink');
+      void zoom.offsetHeight;
+      zoom.classList.add('visible');
+      // 2 秒后开始缩小
+      await sleep(2000);
+      zoom.classList.add('shrink');
+      // 等缩小完成
+      await sleep(2000);
+      // 瞬间显示拼音格，再用 100ms 淡出 zoom，避免两个 z 位置差异导致肉眼可见的切换
+      grid.style.transition = 'none';
+      grid.classList.add('visible');
+      void grid.offsetHeight;
+      zoom.style.transition = 'opacity 0.1s ease-out';
+      zoom.style.opacity = '0';
+      await sleep(120);
+      zoom.classList.remove('visible', 'shrink');
+      zoom.style.opacity = '';
+      zoom.style.transition = '';
+      grid.style.transition = '';
     }
 
     // ── 主教学流程 ──
@@ -1145,12 +1345,14 @@
         )
       );
 
-      // 2. 等待卡片入场动画完成后再播放语音
-      await sleep(950);
-      // 3. 播放教学语音（优先预录 MP3，没有则实时 TTS）
+      // 2. 字母放大动画与 MP3 同时进行
+      const zoomDone = showLetterZoom(letter);
+      // 3. 立即播放教学语音
       await playLessonAudio(letter);
+      // 4. 等动画完成（如果 MP3 比 2 秒短）
+      await zoomDone;
 
-      // 3. 进入等待孩子读拼音（MP3 已包含引导提示，不重复提示）
+      // 5. 进入等待孩子读拼音
       await waitForPinyinRead(lessonData.ref_char, lessonData.ref_pinyin, letter);
     }
 
@@ -1243,11 +1445,13 @@
           setRobotState('pass');
           setRobotMood('happy');
           await streamSpeak(fbPrompt, () => {});
-          await sleep(2800);
+          await sleep(1000);
           setRobotState('ready');
           exampleIdx++;
           if (exampleIdx < lessonData.example_words.length) {
-            await startExampleWord(exampleIdx);
+            const nextInfo = lessonData.exampleChars[exampleIdx];
+            await updateCharCardWithFlip(nextInfo.pinyin, nextInfo.char);
+            await startExampleWord(exampleIdx, true);
           } else {
             await enterDrawing();
           }
@@ -1267,13 +1471,22 @@
         if (result.passed) {
           setRobotState('pass');
           setRobotMood('happy');
-          const wordsDesc = lessonData.exampleChars.map(c => `${c.char}（${c.pinyin}）`).join('、');
-          const mergedPrompt = `孩子刚刚读了"${lessonData.ref_char}"，读得非常棒！先夸孩子一句，然后告诉孩子：用"${lessonData.ref_char}"拼读的字有${wordsDesc}，我们一起来学吧。语气活泼可爱，适合5岁小朋友，不超过50字。不要用emoji表情符号。`;
+          const mergedPrompt = `孩子刚刚读了"${lessonData.ref_char}"，读得非常棒！请用一两句简短活泼的话夸奖孩子，语气开心鼓励，适合5岁小朋友，不超过20字。不要用emoji。`;
           await streamSpeak(mergedPrompt, () => {});
-          await sleep(2800);
+          await sleep(1000);
           setRobotState('ready');
           exampleIdx = 0;
-          await startExampleWord(0);
+          // 检查过渡 MP3
+          const mp3Url = `/voice_of_pinyin/${lessonData.pinyin}_example_words_transition.mp3`;
+          try {
+            await playMp3(mp3Url);
+            const charInfo = lessonData.exampleChars[0];
+            await showCharCardWithFlip(charInfo.pinyin, charInfo.char);
+            await startExampleWord(0, true);
+          } catch {
+            await sleep(1800);
+            await startExampleWord(0);
+          }
         } else {
           setRobotState('fail');
           setRobotMood('sad');
@@ -1288,10 +1501,11 @@
       }
     }
 
-    async function startExampleWord(idx) {
-      const ex = lessonData.example_words[idx];
-      const charInfo = await fetch(`${API}/api/character/${ex.character_content_id}`).then(r=>r.json());
-      showCharCard(charInfo.pinyin, charInfo.char);
+    async function startExampleWord(idx, skipShowCard) {
+      const charInfo = lessonData.exampleChars[idx];
+      if (!skipShowCard) {
+        showCharCard(charInfo.pinyin, charInfo.char);
+      }
       teachPhase = 'tts_playing';
       setRobotState('ready');
       setHint('听老师说...');
@@ -1346,7 +1560,13 @@
     function handleStart() {
       if (!app.classList.contains('welcome')) return;
       // iOS Safari: 必须在用户手势同步上下文中创建并 resume AudioContext
-      if (!ttsAudioCtx) ttsAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (!ttsAudioCtx) {
+        ttsAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        ttsAnalyser = ttsAudioCtx.createAnalyser();
+        ttsAnalyser.fftSize = 128;
+        ttsAnalyser.smoothingTimeConstant = 0.2;
+        ttsAnalyser.connect(ttsAudioCtx.destination);
+      }
       if (ttsAudioCtx.state === 'suspended') ttsAudioCtx.resume();
       // iOS 自动暂停保护：循环播放无声 buffer 保持 AudioContext 一直 running
       try {
@@ -1354,7 +1574,7 @@
         const silentSrc = ttsAudioCtx.createBufferSource();
         silentSrc.buffer = silentBuf;
         silentSrc.loop = true;
-        silentSrc.connect(ttsAudioCtx.destination);
+        silentSrc.connect(ttsAnalyser || ttsAudioCtx.destination);
         silentSrc.start();
       } catch(e) { /* keepalive 非关键，忽略 */ }
       app.classList.replace('welcome', 'teaching');
@@ -1371,9 +1591,9 @@
     const dCtx = drawCanvas.getContext('2d');
     let drawColor = '#f44336';
     let drawing = false;
-    let lastX = 0, lastY = 0, midX = 0, midY = 0;
+    let lastX = 0, lastY = 0;
+    let lastMidX = 0, lastMidY = 0;
     let canvasLeft = 0, canvasTop = 0;
-    let syncPending = false;
 
     // 用离屏 1x 画布做高效绘制，再合成到显示画布
     let offCanvas = document.createElement('canvas');
@@ -1400,6 +1620,10 @@
       offCtx.lineJoin = 'round';
       offCtx.lineWidth = 4;
       offCtx.globalAlpha = 0.75;
+      dCtx.lineCap = 'round';
+      dCtx.lineJoin = 'round';
+      dCtx.lineWidth = 4;
+      dCtx.globalAlpha = 0.75;
       // 恢复保存的内容
       offCtx.drawImage(saved, 0, 0, cw, ch);
       dCtx.clearRect(0, 0, cw, ch);
@@ -1416,36 +1640,45 @@
       drawing = true;
       const p = getPos(e);
       lastX = p.x; lastY = p.y;
-      midX = p.x; midY = p.y;
+      lastMidX = p.x; lastMidY = p.y;
       offCtx.globalCompositeOperation = 'source-over';
       offCtx.strokeStyle = drawColor;
+      dCtx.strokeStyle = drawColor;
+      // 画起始点
+      offCtx.beginPath();
+      offCtx.arc(p.x, p.y, offCtx.lineWidth / 2, 0, Math.PI * 2);
+      offCtx.fillStyle = drawColor;
+      offCtx.fill();
+      dCtx.beginPath();
+      dCtx.arc(p.x, p.y, dCtx.lineWidth / 2, 0, Math.PI * 2);
+      dCtx.fillStyle = drawColor;
+      dCtx.fill();
+      // 初始化路径起点
+      offCtx.beginPath();
+      offCtx.moveTo(p.x, p.y);
+      dCtx.beginPath();
+      dCtx.moveTo(p.x, p.y);
     }
 
     function moveDraw(e) {
       e.preventDefault();
       if (!drawing) return;
       const p = getPos(e);
-      // 跳过与上一点距离 < 3px 的微移动，减少 120Hz iPad 上的无效路径操作
+      // 跳过距离 < 2px 的微移动
       const dx = p.x - lastX, dy = p.y - lastY;
-      if (dx * dx + dy * dy < 9) return;
-      const newMidX = (lastX + p.x) / 2;
-      const newMidY = (lastY + p.y) / 2;
-      // 只画到离屏画布（1x 分辨率，极快）
+      if (dx * dx + dy * dy < 4) return;
+      // 二次贝塞尔中点插值法：以 lastX/Y 为控制点，从上一个中点到新中点画平滑曲线
+      const midX = (lastX + p.x) / 2;
+      const midY = (lastY + p.y) / 2;
+      offCtx.quadraticCurveTo(lastX, lastY, midX, midY);
+      offCtx.stroke();
       offCtx.beginPath();
       offCtx.moveTo(midX, midY);
-      offCtx.quadraticCurveTo(lastX, lastY, newMidX, newMidY);
-      offCtx.stroke();
-      midX = newMidX; midY = newMidY;
+      dCtx.quadraticCurveTo(lastX, lastY, midX, midY);
+      dCtx.stroke();
+      dCtx.beginPath();
+      dCtx.moveTo(midX, midY);
       lastX = p.x; lastY = p.y;
-      // 用 rAF 批量同步到显示画布，避免每次 touchmove 都清屏重绘
-      if (!syncPending) {
-        syncPending = true;
-        requestAnimationFrame(() => {
-          syncPending = false;
-          dCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
-          dCtx.drawImage(offCanvas, 0, 0);
-        });
-      }
     }
 
     function endDraw(e) {
@@ -1544,12 +1777,6 @@
     }
 
     async function generateImage(prompt) {
-      // 确保离屏画布已同步
-      if (syncPending) {
-        syncPending = false;
-        dCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
-        dCtx.drawImage(offCanvas, 0, 0);
-      }
       const overlay = document.getElementById('magicOverlay');
       overlay.classList.add('active');
       playTts('魔法需要一点点时间，请耐心等待哦~~');
@@ -1567,11 +1794,23 @@
       sCtx.drawImage(drawCanvas, 0, 0, sw, sh);
       const imageB64 = scaleCanvas.toDataURL('image/png');
 
-      const resp = await fetch(`${API}/api/generate_image`, {
-        method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ prompt, image_base64: imageB64, size: `${sw}x${sh}` })
-      });
-      const { image_base64 } = await resp.json();
+      let image_base64;
+      try {
+        const resp = await fetch(`${API}/api/generate_image`, {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ prompt, image_base64: imageB64, size: `${sw}x${sh}` })
+        });
+        if (!resp.ok) {
+          const errText = await resp.text();
+          throw new Error(`HTTP ${resp.status}: ${errText.slice(0, 100)}`);
+        }
+        ({ image_base64 } = await resp.json());
+      } catch (err) {
+        console.error('[draw] generate_image failed:', err);
+        overlay.classList.remove('active');
+        await playTts('魔法好像出了点小问题，我们重新试试吧！');
+        return;
+      }
 
       overlay.classList.remove('active');
 

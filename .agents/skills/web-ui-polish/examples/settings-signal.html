@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="signal">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Conduit — Settings</title>
+  <link rel="stylesheet" href="../../src/tokens.css">
+  <link rel="stylesheet" href="../../src/styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <div class="page-shell">
+
+      <nav class="topbar glass" aria-label="Primary">
+        <div class="brand-lockup">
+          <div class="brand-mark" aria-hidden="true"></div>
+          <strong>Conduit</strong>
+        </div>
+        <div class="topnav">
+          <a class="topnav-link" href="#">Monitor</a>
+          <a class="topnav-link" href="#">Pipelines</a>
+          <a class="topnav-link" href="#">Logs</a>
+          <a class="topnav-link is-active" href="#">Settings</a>
+        </div>
+        <div class="hero-actions">
+          <a class="button secondary" href="#">Docs</a>
+          <a class="button primary" href="#">New pipeline</a>
+        </div>
+      </nav>
+
+      <section class="page-hero section">
+        <div class="page-hero-copy rise">
+          <p class="eyebrow">Settings</p>
+          <h1>
+            Configure your
+            <span>workspace</span>
+          </h1>
+          <p class="lede">
+            Manage notifications, security preferences, and pipeline defaults for your Conduit workspace.
+          </p>
+        </div>
+      </section>
+
+      <section class="section settings-layout">
+        <div class="stacked-cards rise">
+          <article class="story-card">
+            <p class="mini-label">Workspace</p>
+            <p class="card-title">Settings pages stay readable when grouping is obvious.</p>
+            <p>Use the support column to explain the page purpose and the settings panel to do the real work. Keep toggles grouped by theme.</p>
+          </article>
+        </div>
+        <div class="settings-panel rise rise-delay">
+
+          <article class="settings-group">
+            <div>
+              <p class="mini-label">Notifications</p>
+              <p class="card-title">Email alerts for pipeline failures</p>
+              <p>Receive an email when any pipeline fails or exceeds its error threshold.</p>
+            </div>
+            <button class="toggle active" type="button" aria-pressed="true">
+              <span></span>
+            </button>
+          </article>
+
+          <article class="settings-group">
+            <div>
+              <p class="mini-label">Notifications</p>
+              <p class="card-title">Slack integration alerts</p>
+              <p>Post failure and recovery alerts to your connected Slack channel.</p>
+            </div>
+            <button class="toggle active" type="button" aria-pressed="true">
+              <span></span>
+            </button>
+          </article>
+
+          <article class="settings-group">
+            <div>
+              <p class="mini-label">Security</p>
+              <p class="card-title">Two-factor authentication</p>
+              <p>Require 2FA for all workspace members when logging in or rotating API keys.</p>
+            </div>
+            <button class="toggle" type="button" aria-pressed="false">
+              <span></span>
+            </button>
+          </article>
+
+          <article class="settings-group">
+            <div>
+              <p class="mini-label">Data</p>
+              <p class="card-title">Request logging</p>
+              <p>Log full request and response payloads for debugging. Logs are retained for 30 days.</p>
+            </div>
+            <button class="toggle active" type="button" aria-pressed="true">
+              <span></span>
+            </button>
+          </article>
+
+          <article class="settings-group">
+            <div>
+              <p class="mini-label">Data</p>
+              <p class="card-title">PII redaction in logs</p>
+              <p>Automatically strip personally identifiable information from stored request logs.</p>
+            </div>
+            <button class="toggle active" type="button" aria-pressed="true">
+              <span></span>
+            </button>
+          </article>
+
+          <article class="settings-group">
+            <div>
+              <p class="mini-label">Performance</p>
+              <p class="card-title">Auto-scaling</p>
+              <p>Allow Conduit to scale gateway nodes automatically based on traffic patterns.</p>
+            </div>
+            <button class="toggle" type="button" aria-pressed="false">
+              <span></span>
+            </button>
+          </article>
+
+        </div>
+      </section>
+
+      <footer class="footer">
+        <div>
+          <div class="brand-lockup">
+            <div class="brand-mark" aria-hidden="true"></div>
+            <strong>Conduit</strong>
+          </div>
+          <p class="footer-copy">Reliable API infrastructure for teams that ship with confidence.</p>
+        </div>
+        <div class="footer-links">
+          <a href="#">Privacy</a>
+          <a href="#">Terms</a>
+          <a href="#">Support</a>
+        </div>
+      </footer>
+
+    </div>
+  </div>
+</body>
+</html>

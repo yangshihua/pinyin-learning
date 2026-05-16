@@ -1,0 +1,37 @@
+{
+  "id": "hero-centered-cta",
+  "name": "Centered CTA Hero",
+  "category": "hero",
+  "description": "A centered hero section with eyebrow label, large headline with accent span, lede paragraph, and dual CTA buttons. Best for landing pages and marketing pages where a single strong message leads the page.",
+  "themes": ["classic", "editorial", "signal"],
+  "structure": {
+    "html": "<section class=\"page-hero section\">\n  <div class=\"page-hero-copy rise\">\n    <p class=\"eyebrow\">{{eyebrow}}</p>\n    <h1>{{title_prefix}} <span>{{title_accent}}</span></h1>\n    <p class=\"lede\">{{subtitle}}</p>\n    <div class=\"hero-actions\">\n      <a href=\"{{cta_link}}\" class=\"button primary\">{{cta_text}}</a>\n      <a href=\"{{secondary_link}}\" class=\"button secondary\">{{secondary_text}}</a>\n    </div>\n  </div>\n</section>",
+    "variables": {
+      "eyebrow": { "type": "string", "default": "Introducing" },
+      "title_prefix": { "type": "string", "default": "Build premium pages with" },
+      "title_accent": { "type": "string", "default": "clear structure" },
+      "subtitle": { "type": "string", "default": "Lead with one strong promise. Let the page move from proof to invitation with calm, confident rhythm." },
+      "cta_text": { "type": "string", "default": "Get Started" },
+      "cta_link": { "type": "string", "default": "#" },
+      "secondary_text": { "type": "string", "default": "Learn More" },
+      "secondary_link": { "type": "string", "default": "#" }
+    }
+  },
+  "variants": [
+    {
+      "name": "single-cta",
+      "description": "Only the primary CTA button, no secondary",
+      "html_diff": "Remove the secondary button element"
+    },
+    {
+      "name": "dark",
+      "description": "Dark background variant for high-contrast hero sections",
+      "html_diff": "Add data-variant=\"dark\" to section"
+    }
+  ],
+  "usage": {
+    "best_for": ["landing pages", "marketing pages", "product launches"],
+    "avoid_when": ["dashboards", "settings pages", "utility pages"]
+  },
+  "quality_score": 9.0
+}

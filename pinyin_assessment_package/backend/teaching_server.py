@@ -483,9 +483,11 @@ async def serve_index():
 app.mount("/", StaticFiles(directory=ROOT), name="static")
 
 if __name__ == "__main__":
+    import socket
+    _ip = socket.gethostbyname(socket.gethostname())
     print("=" * 50)
     print("  拼音教学服务  https://localhost:8081")
-    print("  iPad 访问:  https://192.168.3.206:8081")
+    print(f"  iPad 访问:  https://{_ip}:8081")
     print("=" * 50)
     uvicorn.run(app, host="0.0.0.0", port=8081,
                 ssl_certfile=os.path.join(DIR, "cert.pem"),

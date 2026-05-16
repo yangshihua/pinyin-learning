@@ -1,0 +1,51 @@
+{
+  "version": "1.0.0",
+  "last_updated": "2026-04-08",
+  "agents": {
+    "claude-code": {
+      "name": "Claude Code",
+      "strengths": ["semantic_html", "accessibility", "complex_layouts", "component_composition", "code_quality", "system_design"],
+      "weaknesses": ["chinese_content", "cultural_context"],
+      "speed": "medium",
+      "quality": "high",
+      "best_for": ["structure", "layout", "accessibility", "system_integration"],
+      "description": "Excellent at structured code generation, semantic HTML, and system-level thinking"
+    },
+    "glm": {
+      "name": "GLM",
+      "strengths": ["chinese_content", "localization", "cultural_fit", "copywriting", "balanced_output", "code_generation"],
+      "weaknesses": ["complex_css", "advanced_animations"],
+      "speed": "fast",
+      "quality": "medium-high",
+      "best_for": ["content", "localization", "full_stack", "validation"],
+      "description": "Strong bilingual content generation and balanced code output"
+    },
+    "kimi": {
+      "name": "Kimi",
+      "strengths": ["visual_polish", "glass_effects", "animation_timing", "theme_application", "creative_writing"],
+      "weaknesses": ["semantic_html", "accessibility"],
+      "speed": "medium",
+      "quality": "high",
+      "best_for": ["polish", "visual_refinement", "content"],
+      "description": "Excellent visual refinement and creative content generation"
+    },
+    "cursor": {
+      "name": "Cursor",
+      "strengths": ["rapid_iteration", "ide_integration", "multi_file_edit", "code_completion"],
+      "weaknesses": ["large_context", "system_design"],
+      "speed": "fast",
+      "quality": "medium-high",
+      "best_for": ["rapid_prototyping", "iterative_refinement", "interactive_editing"],
+      "description": "Fast IDE-integrated development with quick iteration cycles"
+    },
+    "windsurf": {
+      "name": "Windsurf",
+      "strengths": ["flow_development", "multi_file", "context_awareness", "pattern_recognition"],
+      "weaknesses": ["niche_styling", "cultural_content"],
+      "speed": "fast",
+      "quality": "high",
+      "best_for": ["structure", "coordinator", "multi_page"],
+      "description": "Flow-based development with strong multi-file context awareness"
+    }
+  }
+}

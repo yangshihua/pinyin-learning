@@ -1,0 +1,149 @@
+{
+  "version": "0.3.0",
+  "last_updated": "2026-04-08",
+  "spacing": {
+    "section_padding_vertical": {
+      "min": 60,
+      "optimal": [76, 120],
+      "max": 160,
+      "unit": "px",
+      "token": "--space-section",
+      "description": "Vertical padding for page sections"
+    },
+    "section_padding_horizontal": {
+      "min": 24,
+      "optimal": [32, 48],
+      "max": 64,
+      "unit": "px",
+      "description": "Horizontal padding for page sections"
+    },
+    "card_spacing": {
+      "min": 16,
+      "optimal": [18, 32],
+      "max": 48,
+      "unit": "px",
+      "token": "--space-gap-md",
+      "description": "Gap between cards in grid/row"
+    },
+    "card_padding": {
+      "min": 16,
+      "optimal": [20, 24],
+      "max": 32,
+      "unit": "px",
+      "description": "Internal padding for cards"
+    },
+    "paragraph_spacing": {
+      "min": 16,
+      "optimal": [18, 24],
+      "max": 32,
+      "unit": "px",
+      "description": "Margin between paragraphs"
+    }
+  },
+  "typography": {
+    "line_height": {
+      "min": 1.5,
+      "optimal": [1.6, 1.8],
+      "max": 2.0,
+      "description": "Line height for body text"
+    },
+    "hero_title_size": {
+      "min": "2.5rem",
+      "optimal": "clamp(3.4rem, 8vw, 6.4rem)",
+      "max": "6.4rem",
+      "description": "Hero section title size"
+    },
+    "section_title_size": {
+      "min": "1.75rem",
+      "optimal": "clamp(2.3rem, 5vw, 4.1rem)",
+      "max": "4.1rem",
+      "description": "Section heading size"
+    },
+    "body_text_size": {
+      "min": "0.875rem",
+      "optimal": "1.04rem",
+      "max": "1.125rem",
+      "description": "Body text size"
+    },
+    "card_title_size": {
+      "optimal": "1.18rem",
+      "description": "Card title size"
+    },
+    "max_line_length": {
+      "min": "45ch",
+      "optimal": "62ch",
+      "max": "75ch",
+      "description": "Maximum line length for text blocks"
+    }
+  },
+  "glass": {
+    "blur": {
+      "min": 10,
+      "optimal": [18, 28],
+      "max": 60,
+      "unit": "px",
+      "actual": "18px",
+      "description": "Backdrop blur intensity"
+    },
+    "surface_opacity": {
+      "start_min": 0.5,
+      "start_optimal": [0.78, 0.84],
+      "end_min": 0.5,
+      "end_optimal": [0.62, 0.68],
+      "description": "Glass surface opacity range (start to end gradient)"
+    },
+    "border_opacity": {
+      "min": 0.1,
+      "optimal": [0.5, 0.6],
+      "max": 0.8,
+      "description": "Glass border opacity"
+    },
+    "allowed_surfaces": [
+      "topbar",
+      "hero-panel",
+      "dashboard-nav",
+      "modal-shell",
+      "drawer-shell",
+      "theme-dock"
+    ],
+    "avoid_surfaces": [
+      "story-card",
+      "principle-card",
+      "stage-card",
+      "metric-card",
+      "content-panel",
+      "settings-group"
+    ]
+  },
+  "colors": {
+    "contrast_ratio_minimum": 4.5,
+    "contrast_ratio_optimal": 7.0,
+    "description": "WCAG AA requires 4.5:1 for normal text, AAA requires 7:1"
+  },
+  "animation": {
+    "duration_fast": "0.2s",
+    "duration_normal": "320ms",
+    "duration_slow": "760ms",
+    "easing": "cubic-bezier(0.22, 1, 0.36, 1)",
+    "stagger_delay": "120ms",
+    "allowed_types": ["rise", "rise-delay", "fade", "overlay-enter", "overlay-exit"],
+    "avoid_types": ["bounce", "swing", "flash", "shake", "jello"]
+  },
+  "responsive": {
+    "breakpoints": {
+      "desktop": "> 1100px",
+      "tablet": "<= 1100px",
+      "mobile": "<= 720px"
+    },
+    "collapse_rules": {
+      "1100px": ["hero-grid", "showcase-layout", "settings-layout", "dashboard-shell", "card-row", "metric-row", "panel-grid", "cta-band"],
+      "720px": ["stage-grid", "card-row", "metric-row", "panel-grid"]
+    }
+  },
+  "section_order": {
+    "landing": ["page-hero", "card-row", "stacked-cards", "cta-band"],
+    "showcase": ["page-hero", "showcase-layout", "timeline-strip", "cta-band"],
+    "dashboard": ["page-hero", "dashboard-shell"],
+    "settings": ["page-hero", "settings-layout"]
+  }
+}

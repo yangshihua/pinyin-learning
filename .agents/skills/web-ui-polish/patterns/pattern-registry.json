@@ -1,0 +1,15 @@
+{
+  "version": "1.0.0",
+  "last_updated": "2026-04-08",
+  "patterns": [
+    { "id": "hero-centered-cta", "file": "hero-patterns/centered-cta.json", "category": "hero", "quality_score": 9.0 },
+    { "id": "hero-split-content", "file": "hero-patterns/split-content.json", "category": "hero", "quality_score": 8.8 },
+    { "id": "hero-video-background", "file": "hero-patterns/video-background.json", "category": "hero", "quality_score": 8.5 },
+    { "id": "card-feature-grid", "file": "card-patterns/feature-grid.json", "category": "card", "quality_score": 9.0 },
+    { "id": "card-testimonial", "file": "card-patterns/testimonial-carousel.json", "category": "card", "quality_score": 8.5 },
+    { "id": "card-pricing-table", "file": "card-patterns/pricing-table.json", "category": "card", "quality_score": 8.7 },
+    { "id": "layout-sidebar-content", "file": "layout-patterns/sidebar-content.json", "category": "layout", "quality_score": 8.8 },
+    { "id": "layout-masonry-grid", "file": "layout-patterns/masonry-grid.json", "category": "layout", "quality_score": 8.3 },
+    { "id": "layout-bento-box", "file": "layout-patterns/bento-box.json", "category": "layout", "quality_score": 8.6 }
+  ]
+}

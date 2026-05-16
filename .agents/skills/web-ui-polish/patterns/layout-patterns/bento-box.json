@@ -1,0 +1,38 @@
+{
+  "id": "layout-bento-box",
+  "name": "Bento Box Grid",
+  "category": "layout",
+  "description": "A grid layout featuring one large spotlight panel alongside several smaller content panels. Uses panel-grid and stage-grid to create a visually balanced bento-style composition.",
+  "themes": ["classic", "editorial", "signal"],
+  "structure": {
+    "html": "<section class=\"section rise\">\n  <div class=\"panel-grid\">\n    <article class=\"content-panel spotlight\">\n      <p class=\"mini-label\">{{spotlight_label}}</p>\n      <p class=\"card-title\">{{spotlight_title}}</p>\n      <p>{{spotlight_body}}</p>\n    </article>\n    <article class=\"content-panel\">\n      <p class=\"mini-label\">{{panel_1_label}}</p>\n      <p class=\"card-title\">{{panel_1_title}}</p>\n    </article>\n    <article class=\"content-panel\">\n      <p class=\"mini-label\">{{panel_2_label}}</p>\n      <p class=\"card-title\">{{panel_2_title}}</p>\n    </article>\n    <article class=\"content-panel\">\n      <p class=\"mini-label\">{{panel_3_label}}</p>\n      <p class=\"card-title\">{{panel_3_title}}</p>\n    </article>\n  </div>\n</section>",
+    "variables": {
+      "spotlight_label": { "type": "string", "default": "Featured" },
+      "spotlight_title": { "type": "string", "default": "One panel carries the story. The rest support it." },
+      "spotlight_body": { "type": "string", "default": "Use a single spotlight panel to anchor the grid and let smaller panels provide context and detail." },
+      "panel_1_label": { "type": "string", "default": "Integration" },
+      "panel_1_title": { "type": "string", "default": "Works with existing systems" },
+      "panel_2_label": { "type": "string", "default": "Performance" },
+      "panel_2_title": { "type": "string", "default": "Lightweight and fast" },
+      "panel_3_label": { "type": "string", "default": "Extensible" },
+      "panel_3_title": { "type": "string", "default": "Built for real projects" }
+    }
+  },
+  "variants": [
+    {
+      "name": "horizontal-spotlight",
+      "description": "Spotlight panel spans the full width at the top",
+      "html_diff": "Move spotlight panel outside panel-grid into its own row, then panel-grid below"
+    },
+    {
+      "name": "six-panel",
+      "description": "Add two more content panels for a denser grid",
+      "html_diff": "Insert two additional content-panel articles into the panel-grid"
+    }
+  ],
+  "usage": {
+    "best_for": ["product feature grids", "showcase sections", "capability overviews"],
+    "avoid_when": ["long-form content", "text-heavy pages", "forms"]
+  },
+  "quality_score": 8.6
+}

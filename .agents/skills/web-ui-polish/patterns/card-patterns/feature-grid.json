@@ -1,0 +1,38 @@
+{
+  "id": "card-feature-grid",
+  "name": "Feature Grid Cards",
+  "category": "card",
+  "description": "A 3-column card row with principle-card items, each containing a mini-label, card-title, and supporting text. Uses staggered rise animations for a calm reveal effect.",
+  "themes": ["classic", "editorial", "signal"],
+  "structure": {
+    "html": "<section class=\"section\">\n  <div class=\"card-row rise\">\n    <article class=\"principle-card\">\n      <p class=\"mini-label\">{{card_1_label}}</p>\n      <p class=\"card-title\">{{card_1_title}}</p>\n      <p>{{card_1_body}}</p>\n    </article>\n    <article class=\"principle-card rise-delay\">\n      <p class=\"mini-label\">{{card_2_label}}</p>\n      <p class=\"card-title\">{{card_2_title}}</p>\n      <p>{{card_2_body}}</p>\n    </article>\n    <article class=\"principle-card\" style=\"animation-delay: 0.2s\">\n      <p class=\"mini-label\">{{card_3_label}}</p>\n      <p class=\"card-title\">{{card_3_title}}</p>\n      <p>{{card_3_body}}</p>\n    </article>\n  </div>\n</section>",
+    "variables": {
+      "card_1_label": { "type": "string", "default": "Structure" },
+      "card_1_title": { "type": "string", "default": "Hierarchy before decoration" },
+      "card_1_body": { "type": "string", "default": "Fix the layout and spacing before adding visual polish." },
+      "card_2_label": { "type": "string", "default": "Restraint" },
+      "card_2_title": { "type": "string", "default": "Calm over flashy" },
+      "card_2_body": { "type": "string", "default": "Every effect should serve clarity, not showmanship." },
+      "card_3_label": { "type": "string", "default": "Consistency" },
+      "card_3_title": { "type": "string", "default": "One system, one voice" },
+      "card_3_body": { "type": "string", "default": "Reuse classes and tokens to maintain visual coherence." }
+    }
+  },
+  "variants": [
+    {
+      "name": "two-column",
+      "description": "Two wider cards instead of three",
+      "html_diff": "Remove the third principle-card and adjust card-row grid"
+    },
+    {
+      "name": "with-icons",
+      "description": "Add icon elements above the mini-label",
+      "html_diff": "Insert an icon element before each mini-label"
+    }
+  ],
+  "usage": {
+    "best_for": ["feature sections", "principle listings", "benefit grids", "landing page body"],
+    "avoid_when": ["single-message sections", "dense data displays"]
+  },
+  "quality_score": 9.0
+}

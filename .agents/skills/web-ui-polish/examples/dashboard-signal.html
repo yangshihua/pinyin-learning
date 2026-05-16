@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="signal">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Conduit — Infrastructure Dashboard</title>
+  <link rel="stylesheet" href="../../src/tokens.css">
+  <link rel="stylesheet" href="../../src/styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <div class="page-shell">
+
+      <nav class="topbar glass" aria-label="Primary">
+        <div class="brand-lockup">
+          <div class="brand-mark" aria-hidden="true"></div>
+          <strong>Conduit</strong>
+        </div>
+        <div class="topnav">
+          <a class="topnav-link" href="#">Pipelines</a>
+          <a class="topnav-link is-active" href="#">Monitor</a>
+          <a class="topnav-link" href="#">Logs</a>
+          <a class="topnav-link" href="#">Settings</a>
+        </div>
+        <div class="hero-actions">
+          <a class="button secondary" href="#">Docs</a>
+          <a class="button primary" href="#">New pipeline</a>
+        </div>
+      </nav>
+
+      <section class="page-hero section">
+        <div class="page-hero-copy rise">
+          <p class="eyebrow">Infrastructure Monitor</p>
+          <h1>
+            System health
+          </h1>
+          <p class="lede">
+            Real-time metrics and alerts for every pipeline, gateway, and data flow in your infrastructure.
+          </p>
+        </div>
+      </section>
+
+      <section class="section dashboard-shell rise">
+        <nav class="dashboard-nav glass" aria-label="Workspace">
+          <p class="mini-label">Monitor</p>
+          <ul>
+            <li class="active">Overview</li>
+            <li>Gateways</li>
+            <li>Pipelines</li>
+            <li>Alerts</li>
+            <li>Regions</li>
+          </ul>
+        </nav>
+        <div class="dashboard-main">
+          <div class="metric-row">
+            <article class="metric-card">
+              <span>Requests / sec</span>
+              <strong>27.8K</strong>
+            </article>
+            <article class="metric-card">
+              <span>Error rate</span>
+              <strong>0.03%</strong>
+            </article>
+            <article class="metric-card">
+              <span>P99 latency</span>
+              <strong>18ms</strong>
+            </article>
+            <article class="metric-card">
+              <span>Active alerts</span>
+              <strong>0</strong>
+            </article>
+          </div>
+          <div class="panel-grid">
+            <article class="content-panel">
+              <p class="mini-label">Primary gateway</p>
+              <p class="card-title">US-East cluster operating nominally</p>
+              <p>All 24 nodes healthy. Auto-scaling margin at 40%. Last incident resolved 6 days ago with no recurrence.</p>
+            </article>
+            <article class="content-panel">
+              <p class="mini-label">Data pipeline</p>
+              <p class="card-title">ETL jobs running on schedule</p>
+              <p>14 of 14 batch jobs completed within SLA today. Streaming ingestion lag remains under 200ms across all topics.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <footer class="footer">
+        <div>
+          <div class="brand-lockup">
+            <div class="brand-mark" aria-hidden="true"></div>
+            <strong>Conduit</strong>
+          </div>
+          <p class="footer-copy">Reliable API infrastructure for teams that ship with confidence.</p>
+        </div>
+        <div class="footer-links">
+          <a href="#">Privacy</a>
+          <a href="#">Terms</a>
+          <a href="#">Status</a>
+        </div>
+      </footer>
+
+    </div>
+  </div>
+</body>
+</html>

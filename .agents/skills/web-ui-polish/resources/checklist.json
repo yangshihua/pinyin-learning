@@ -1,0 +1,187 @@
+{
+  "version": "0.3.0",
+  "last_updated": "2026-04-08",
+  "categories": {
+    "html_structure": {
+      "name": "HTML Structure",
+      "items": [
+        {
+          "id": "doctype",
+          "description": "Has DOCTYPE html declaration",
+          "required": true,
+          "check": "html.includes('<!DOCTYPE html>')"
+        },
+        {
+          "id": "viewport",
+          "description": "Has viewport meta tag",
+          "required": true,
+          "check": "html.includes('name=\"viewport\"')"
+        },
+        {
+          "id": "charset",
+          "description": "Has charset meta tag",
+          "required": true,
+          "check": "html.includes('charset=')"
+        },
+        {
+          "id": "semantic_tags",
+          "description": "Uses semantic HTML5 tags (main, section, article)",
+          "required": true,
+          "check": "html.includes('<main') || html.includes('<section')"
+        },
+        {
+          "id": "theme_attribute",
+          "description": "Has data-theme attribute on body or html",
+          "required": true,
+          "check": "html.includes('data-theme=')"
+        },
+        {
+          "id": "lang_attribute",
+          "description": "Has lang attribute on html tag",
+          "required": false,
+          "check": "html.includes('lang=')"
+        },
+        {
+          "id": "section_count",
+          "description": "Has at least 3 sections for complete page rhythm",
+          "required": true,
+          "check": "(html.match(/<section/g) || []).length + (html.match(/<main/g) || []).length >= 3"
+        }
+      ]
+    },
+    "accessibility": {
+      "name": "Accessibility",
+      "items": [
+        {
+          "id": "alt_text",
+          "description": "All images have alt attributes",
+          "required": true,
+          "check": "custom_function:validateImageAlt"
+        },
+        {
+          "id": "button_labels",
+          "description": "All buttons have text or aria-label",
+          "required": true,
+          "check": "custom_function:validateButtonLabels"
+        },
+        {
+          "id": "form_labels",
+          "description": "All form inputs have associated labels",
+          "required": true,
+          "check": "custom_function:validateFormLabels"
+        },
+        {
+          "id": "heading_hierarchy",
+          "description": "Heading levels are sequential (no skips)",
+          "required": false,
+          "check": "custom_function:validateHeadingHierarchy"
+        },
+        {
+          "id": "landmarks",
+          "description": "Has main landmark element",
+          "required": false,
+          "check": "html.includes('<main')"
+        }
+      ]
+    },
+    "design_quality": {
+      "name": "Design Quality",
+      "items": [
+        {
+          "id": "visual_hierarchy",
+          "description": "Clear visual hierarchy (design critique score >= 7)",
+          "required": true,
+          "check": "design_critique.visual_hierarchy >= 7"
+        },
+        {
+          "id": "breathing_space",
+          "description": "Adequate breathing space (design critique score >= 7)",
+          "required": true,
+          "check": "design_critique.breathing_space >= 7"
+        },
+        {
+          "id": "glass_quality",
+          "description": "Good glass effect quality (design critique score >= 6)",
+          "required": false,
+          "check": "design_critique.glass_quality >= 6"
+        },
+        {
+          "id": "overall_score",
+          "description": "Overall design score >= 7.5 (production-ready)",
+          "required": true,
+          "check": "design_critique.overall >= 7.5"
+        },
+        {
+          "id": "component_usage",
+          "description": "Uses AetherPane components correctly",
+          "required": true,
+          "check": "html.includes('page-hero') || html.includes('card-row') || html.includes('dashboard-shell')"
+        },
+        {
+          "id": "cta_clarity",
+          "description": "Has clear primary CTA",
+          "required": true,
+          "check": "html.includes('button primary') || html.includes('btn-primary')"
+        }
+      ]
+    },
+    "tokens_usage": {
+      "name": "Design Tokens Usage",
+      "items": [
+        {
+          "id": "css_variables",
+          "description": "Uses CSS variables (var(--))",
+          "required": true,
+          "check": "html.includes('var(--')"
+        },
+        {
+          "id": "no_excessive_hardcoded_colors",
+          "description": "No excessive hardcoded color values in inline styles",
+          "required": false,
+          "check": "custom_function:validateHardcodedColors"
+        },
+        {
+          "id": "tokens_css_linked",
+          "description": "tokens.css is linked in head",
+          "required": true,
+          "check": "html.includes('tokens.css')"
+        },
+        {
+          "id": "styles_css_linked",
+          "description": "styles.css is linked in head",
+          "required": false,
+          "check": "html.includes('styles.css')"
+        },
+        {
+          "id": "minimal_inline_styles",
+          "description": "Minimal use of inline styles (< 10)",
+          "required": false,
+          "check": "html.split('style=').length < 10"
+        }
+      ]
+    },
+    "responsive": {
+      "name": "Responsive Design",
+      "items": [
+        {
+          "id": "viewport_meta",
+          "description": "Has responsive viewport meta tag",
+          "required": true,
+          "check": "html.includes('width=device-width')"
+        },
+        {
+          "id": "flexible_grid",
+          "description": "Uses flexible grid classes",
+          "required": false,
+          "check": "html.includes('card-row') || html.includes('hero-grid') || html.includes('panel-grid')"
+        },
+        {
+          "id": "container_max_width",
+          "description": "Has container with max-width constraint",
+          "required": false,
+          "check": "html.includes('container-max') || html.includes('max-width')"
+        }
+      ]
+    }
+  }
+}

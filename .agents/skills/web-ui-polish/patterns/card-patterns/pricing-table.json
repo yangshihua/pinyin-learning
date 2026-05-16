@@ -1,0 +1,44 @@
+{
+  "id": "card-pricing-table",
+  "name": "Pricing Table Cards",
+  "category": "card",
+  "description": "A 3-column card row for pricing tiers with one spotlight card to emphasize the recommended plan. Each card displays a tier name, price, feature list, and a CTA button.",
+  "themes": ["classic", "editorial", "signal"],
+  "structure": {
+    "html": "<section class=\"section\">\n  <div class=\"card-row rise\">\n    <article class=\"principle-card\">\n      <p class=\"mini-label\">{{tier_1_name}}</p>\n      <p class=\"card-title\">{{tier_1_price}}</p>\n      <ul class=\"feature-list\">\n{{tier_1_features}}\n      </ul>\n      <a href=\"{{tier_1_link}}\" class=\"button secondary\">{{tier_1_cta}}</a>\n    </article>\n    <article class=\"principle-card spotlight\">\n      <p class=\"mini-label\">{{tier_2_name}}</p>\n      <p class=\"card-title\">{{tier_2_price}}</p>\n      <ul class=\"feature-list\">\n{{tier_2_features}}\n      </ul>\n      <a href=\"{{tier_2_link}}\" class=\"button primary\">{{tier_2_cta}}</a>\n    </article>\n    <article class=\"principle-card rise-delay\">\n      <p class=\"mini-label\">{{tier_3_name}}</p>\n      <p class=\"card-title\">{{tier_3_price}}</p>\n      <ul class=\"feature-list\">\n{{tier_3_features}}\n      </ul>\n      <a href=\"{{tier_3_link}}\" class=\"button secondary\">{{tier_3_cta}}</a>\n    </article>\n  </div>\n</section>",
+    "variables": {
+      "tier_1_name": { "type": "string", "default": "Starter" },
+      "tier_1_price": { "type": "string", "default": "$9 / month" },
+      "tier_1_features": { "type": "string", "default": "<li>5 projects</li>\n<li>Basic analytics</li>\n<li>Email support</li>" },
+      "tier_1_cta": { "type": "string", "default": "Start Free" },
+      "tier_1_link": { "type": "string", "default": "#" },
+      "tier_2_name": { "type": "string", "default": "Professional" },
+      "tier_2_price": { "type": "string", "default": "$29 / month" },
+      "tier_2_features": { "type": "string", "default": "<li>Unlimited projects</li>\n<li>Advanced analytics</li>\n<li>Priority support</li>\n<li>Custom themes</li>" },
+      "tier_2_cta": { "type": "string", "default": "Get Started" },
+      "tier_2_link": { "type": "string", "default": "#" },
+      "tier_3_name": { "type": "string", "default": "Enterprise" },
+      "tier_3_price": { "type": "string", "default": "$99 / month" },
+      "tier_3_features": { "type": "string", "default": "<li>Everything in Pro</li>\n<li>SSO and SAML</li>\n<li>Dedicated support</li>\n<li>SLA guarantee</li>" },
+      "tier_3_cta": { "type": "string", "default": "Contact Sales" },
+      "tier_3_link": { "type": "string", "default": "#" }
+    }
+  },
+  "variants": [
+    {
+      "name": "two-tier",
+      "description": "Only two pricing tiers, simpler decision",
+      "html_diff": "Remove one card from card-row"
+    },
+    {
+      "name": "annual-billing",
+      "description": "Toggle for annual vs monthly pricing display",
+      "html_diff": "Add a billing toggle element above the card-row"
+    }
+  ],
+  "usage": {
+    "best_for": ["pricing pages", "plan selection", "SaaS landing pages"],
+    "avoid_when": ["non-commercial pages", "internal dashboards"]
+  },
+  "quality_score": 8.7
+}

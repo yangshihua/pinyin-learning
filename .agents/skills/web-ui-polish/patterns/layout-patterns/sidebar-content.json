@@ -1,0 +1,34 @@
+{
+  "id": "layout-sidebar-content",
+  "name": "Sidebar Content Layout",
+  "category": "layout",
+  "description": "Dashboard-style layout with a glass sidebar navigation and a main content area arranged in a panel grid. Glass is restricted to the top-level shell surface only.",
+  "themes": ["classic", "editorial", "signal"],
+  "structure": {
+    "html": "<section class=\"section dashboard-shell rise\">\n  <nav class=\"dashboard-nav glass\" aria-label=\"{{nav_label}}\">\n    <p class=\"mini-label\">{{nav_title}}</p>\n    <ul>\n{{nav_items}}\n    </ul>\n  </nav>\n  <div class=\"dashboard-main\">\n    <div class=\"metric-row\">\n{{metrics}}\n    </div>\n    <div class=\"panel-grid\">\n{{panels}}\n    </div>\n  </div>\n</section>",
+    "variables": {
+      "nav_label": { "type": "string", "default": "Workspace" },
+      "nav_title": { "type": "string", "default": "Workspace" },
+      "nav_items": { "type": "string", "default": "<li class=\"active\">Overview</li>\n<li>Projects</li>\n<li>Insights</li>\n<li>Settings</li>" },
+      "metrics": { "type": "string", "default": "<article class=\"metric-card\">\n  <span>Active projects</span>\n  <strong>12</strong>\n</article>\n<article class=\"metric-card\">\n  <span>Completion rate</span>\n  <strong>94%</strong>\n</article>\n<article class=\"metric-card\">\n  <span>Pending reviews</span>\n  <strong>3</strong>\n</article>" },
+      "panels": { "type": "string", "default": "<article class=\"content-panel\">\n  <p class=\"mini-label\">Current Focus</p>\n  <p class=\"card-title\">Layout discipline makes dense pages readable.</p>\n</article>\n<article class=\"content-panel\">\n  <p class=\"mini-label\">Next Step</p>\n  <p class=\"card-title\">Turn recurring shell patterns into reusable states.</p>\n</article>" }
+    }
+  },
+  "variants": [
+    {
+      "name": "collapsed-sidebar",
+      "description": "Icon-only sidebar for more content space",
+      "html_diff": "Add data-variant=\"collapsed\" to dashboard-nav"
+    },
+    {
+      "name": "top-nav",
+      "description": "Horizontal navigation bar instead of sidebar",
+      "html_diff": "Replace dashboard-nav with a horizontal nav element inside dashboard-shell"
+    }
+  ],
+  "usage": {
+    "best_for": ["dashboard overview pages", "admin panels", "workspace shells"],
+    "avoid_when": ["marketing pages", "single-column content", "landing pages"]
+  },
+  "quality_score": 8.8
+}

@@ -1,0 +1,35 @@
+{
+  "id": "hero-video-background",
+  "name": "Video Background Hero",
+  "category": "hero",
+  "description": "Full-height hero section with a background media area and a glass overlay content panel. The media provides atmosphere while the overlay delivers the message with clarity.",
+  "themes": ["classic", "editorial", "signal"],
+  "structure": {
+    "html": "<section class=\"page-hero section\" data-variant=\"media\">\n  <div class=\"hero-media-bg\">\n    <video autoplay muted loop playsinline>\n      <source src=\"{{video_src}}\" type=\"video/mp4\">\n    </video>\n  </div>\n  <div class=\"hero-panel glass rise\">\n    <div class=\"panel-caption\">\n      <span class=\"caption-dot\"></span>\n      {{panel_label}}\n    </div>\n    <h1>{{title}}</h1>\n    <p class=\"lede\">{{subtitle}}</p>\n    <div class=\"hero-actions\">\n      <a href=\"{{cta_link}}\" class=\"button primary\">{{cta_text}}</a>\n    </div>\n  </div>\n</section>",
+    "variables": {
+      "video_src": { "type": "string", "default": "hero-bg.mp4" },
+      "panel_label": { "type": "string", "default": "Featured" },
+      "title": { "type": "string", "default": "Motion supports clarity, not distraction." },
+      "subtitle": { "type": "string", "default": "Use media to set atmosphere while keeping the message front and center." },
+      "cta_text": { "type": "string", "default": "Watch" },
+      "cta_link": { "type": "string", "default": "#" }
+    }
+  },
+  "variants": [
+    {
+      "name": "image-background",
+      "description": "Use a static image instead of video",
+      "html_diff": "Replace video element with an img element inside hero-media-bg"
+    },
+    {
+      "name": "centered-overlay",
+      "description": "Center the glass overlay panel horizontally",
+      "html_diff": "Add data-align=\"center\" to hero-panel"
+    }
+  ],
+  "usage": {
+    "best_for": ["product launches", "showcase pages", "brand storytelling"],
+    "avoid_when": ["text-heavy pages", "utility dashboards", "pages targeting slow connections"]
+  },
+  "quality_score": 8.5
+}

@@ -1,0 +1,37 @@
+{
+  "id": "hero-split-content",
+  "name": "Split Content Hero",
+  "category": "hero",
+  "description": "Two-column hero layout with a glass panel on one side and stacked story cards on the other. Ideal for showcasing a product or feature alongside supporting narrative cards.",
+  "themes": ["classic", "editorial", "signal"],
+  "structure": {
+    "html": "<section class=\"section hero-grid\">\n  <div class=\"hero-media rise\">\n    <div class=\"hero-panel glass\">\n      <div class=\"panel-caption\">\n        <span class=\"caption-dot\"></span>\n        {{panel_label}}\n      </div>\n      <div class=\"stage-grid\">\n        <article class=\"stage-card spotlight\">\n          <p>{{card_1_label}}</p>\n          <strong>{{card_1_title}}</strong>\n        </article>\n        <article class=\"stage-card\">\n          <p>{{card_2_label}}</p>\n          <strong>{{card_2_title}}</strong>\n        </article>\n      </div>\n    </div>\n  </div>\n  <div class=\"stacked-cards rise rise-delay\">\n    <article class=\"story-card\">\n      <p class=\"mini-label\">{{story_label}}</p>\n      <p class=\"card-title\">{{story_title}}</p>\n      <p>{{story_body}}</p>\n    </article>\n  </div>\n</section>",
+    "variables": {
+      "panel_label": { "type": "string", "default": "Feature Overview" },
+      "card_1_label": { "type": "string", "default": "Core" },
+      "card_1_title": { "type": "string", "default": "Structured Layout" },
+      "card_2_label": { "type": "string", "default": "Detail" },
+      "card_2_title": { "type": "string", "default": "Refined Typography" },
+      "story_label": { "type": "string", "default": "Why It Matters" },
+      "story_title": { "type": "string", "default": "The second column should explain, not compete." },
+      "story_body": { "type": "string", "default": "Keep support cards calm and let the hero panel do the first impression work." }
+    }
+  },
+  "variants": [
+    {
+      "name": "reversed",
+      "description": "Swap columns so cards appear on the left",
+      "html_diff": "Reorder stacked-cards before hero-media"
+    },
+    {
+      "name": "triple-card",
+      "description": "Three story cards instead of one",
+      "html_diff": "Add additional story-card articles to stacked-cards"
+    }
+  ],
+  "usage": {
+    "best_for": ["product showcase pages", "feature introductions", "landing pages with proof"],
+    "avoid_when": ["full-width media heroes", "dense dashboards"]
+  },
+  "quality_score": 8.8
+}

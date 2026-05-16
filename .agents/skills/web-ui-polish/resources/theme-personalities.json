@@ -1,0 +1,150 @@
+{
+  "version": "0.3.0",
+  "last_updated": "2026-04-08",
+  "themes": {
+    "classic": {
+      "personality": "refined, timeless, trustworthy",
+      "voice": "professional but warm",
+      "pacing": "measured, deliberate",
+      "visual_weight": "balanced, harmonious",
+      "color_palette": "subtle, sophisticated",
+      "typography_style": "clean, readable",
+      "use_cases": [
+        "SaaS landing pages",
+        "Professional portfolios",
+        "Corporate websites",
+        "Premium product pages",
+        "B2B platforms"
+      ],
+      "avoid_when": [
+        "Playful brand personality",
+        "Youth-focused market",
+        "Experimental/avant-garde",
+        "Heavy data visualization"
+      ],
+      "key_characteristics": {
+        "glass_intensity": "medium",
+        "spacing_generosity": "high",
+        "animation_subtlety": "high",
+        "visual_complexity": "low-medium"
+      },
+      "fonts": {
+        "body": "Manrope",
+        "display": "Manrope",
+        "accent": "Instrument Serif (italic)"
+      },
+      "color_tone": "warm neutral with sage green accent",
+      "example_brands": [
+        "Apple",
+        "Stripe",
+        "Linear",
+        "Notion"
+      ]
+    },
+    "editorial": {
+      "personality": "bold, expressive, magazine-like",
+      "voice": "confident, opinionated",
+      "pacing": "dynamic, varied",
+      "visual_weight": "heavy typography, strong contrast",
+      "color_palette": "bold, high-contrast",
+      "typography_style": "expressive, hierarchical",
+      "use_cases": [
+        "Blog platforms",
+        "Case study pages",
+        "Storytelling sites",
+        "Content-heavy pages",
+        "Portfolio showcases"
+      ],
+      "avoid_when": [
+        "Data-heavy dashboards",
+        "Utility-first tools",
+        "Minimal aesthetic required",
+        "Conservative brands"
+      ],
+      "key_characteristics": {
+        "glass_intensity": "medium-high",
+        "spacing_generosity": "varied",
+        "animation_subtlety": "medium",
+        "visual_complexity": "high"
+      },
+      "fonts": {
+        "body": "Manrope",
+        "display": "Fraunces",
+        "accent": "Fraunces (normal)"
+      },
+      "color_tone": "warm terracotta with amber accent",
+      "example_brands": [
+        "Medium",
+        "The Verge",
+        "Awwwards",
+        "Behance"
+      ]
+    },
+    "signal": {
+      "personality": "minimal, functional, data-focused",
+      "voice": "direct, efficient",
+      "pacing": "consistent, predictable",
+      "visual_weight": "light, spacious",
+      "color_palette": "neutral, functional",
+      "typography_style": "utilitarian, clear",
+      "use_cases": [
+        "Dashboards",
+        "Admin panels",
+        "Data visualization tools",
+        "Settings pages",
+        "Developer tools"
+      ],
+      "avoid_when": [
+        "Marketing/conversion focus",
+        "Emotional appeal needed",
+        "Brand-heavy content",
+        "Storytelling required"
+      ],
+      "key_characteristics": {
+        "glass_intensity": "low-medium",
+        "spacing_generosity": "high",
+        "animation_subtlety": "very high",
+        "visual_complexity": "very low"
+      },
+      "fonts": {
+        "body": "Space Grotesk",
+        "display": "Space Grotesk",
+        "accent": "Space Grotesk (normal)"
+      },
+      "color_tone": "cool blue-gray with steel blue accent",
+      "example_brands": [
+        "GitHub",
+        "Vercel",
+        "Railway",
+        "Supabase"
+      ]
+    }
+  },
+  "selection_guide": {
+    "by_goal": {
+      "conversion": ["classic", "editorial"],
+      "data_display": ["signal"],
+      "storytelling": ["editorial"],
+      "utility": ["signal"],
+      "brand_showcase": ["classic", "editorial"]
+    },
+    "by_audience": {
+      "professionals": ["classic"],
+      "creatives": ["editorial"],
+      "developers": ["signal"],
+      "general": ["classic"],
+      "enterprise": ["classic", "signal"]
+    },
+    "by_content_density": {
+      "low": ["classic", "editorial"],
+      "medium": ["classic"],
+      "high": ["signal"]
+    },
+    "by_page_type": {
+      "landing": ["classic", "editorial"],
+      "showcase": ["editorial", "classic"],
+      "dashboard": ["signal"],
+      "settings": ["signal", "classic"]
+    }
+  }
+}
